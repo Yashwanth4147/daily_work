@@ -1,0 +1,132 @@
+-------1.Write the select statement which gives all the products which costs more than Rs 250.
+select p_name,cost
+from product
+where cost>250;
+-----2.Write the select statement which gives product name, cost, price and profit.
+select p_name,cost,price,price-cost as profit from product;
+select p_name,price,cost,price-cost as profit from product; 
+-----3.	Find the products which give more profit than product marker
+select p_name 
+from product                                
+where p_id>(select p_id from product
+                     where p_name='Marker');
+------4.	Display the products which give the profit greater than 100 Rs.              
+select p_name from product
+where price-cost>75;
+-----5.Display the products which are not from Stationary and Computer family.
+select p_name from product
+where p_family not in ('stationary','computer');
+------6.Display the products which give more profit than the p_id 102.
+select p_name 
+from product
+where (price-cost) > (select price-cost from product where p_id=102);
+---7.	Display products which are launched in the year of 2010.
+select p_name 
+from product 
+where to_char(launch_date,'yyyy')=2010;
+---------8.Display the products which name starts with either ‘S’ or ‘W’ 
+-----------and which belongs to Stationary and cost more than 300 Rs
+select p_name 
+from product    
+where p_name like 's%' or p_name like 'w%'
+and p_family = 'stationary' 
+and cost>300;            
+--------9.	Display the products which are launching next month.
+select p_name 
+from product
+where to_char(launch_date,'mm-yy')=to_char(add_months(sysdate,1),'mm-yy'); 
+select * from product;
+--------10.	Display product name which has the maximum price in the entire product table.
+select p_name
+from product
+where price = (select max(price) from product);
+
+---11.List the product name, cost, price, profit and percentage of profit we get in each product.
+select p_name,cost,price,(price-cost) as profit,(((price-cost)/cost)*100)as profit_percentage 
+from product; 
+
+select p_name,cost,price,(price-cost) as profit,round(((price-cost)/cost)*100)as profit_percentage 
+from product;
+----12.Display how many products we have in Computer family which has the price range between 2000 and 50000.                                                              
+select p_name 
+from product
+where p_family ='computer' and price between 2000 and 50000;
+
+
+
+---1.Write a query to list the cities which have more population than Bangalore.
+select city_name
+from city
+where city_population > (select city_population
+from city
+where city_name='Bangalore');
+
+----2.Display all the branch names from Chennai.
+select b_name
+from branch
+where city_id = (select city_id
+from city------sub query
+where city_name='Chennai');
+
+select b_name
+from city c,branch b
+where c.city_id=b.city_id
+and city_name='Chennai';
+
+select b_name
+from branch---simple query
+where city_id='20';
+
+------3.Display a city name which does not have any branches
+select city_name
+from city
+where city_id not in (select city_id
+from branch);
+
+---4.Display branch name, address and phone number of all the branches where the name starts with either B or M 
+----------------and the city name starts with either B or C.
+select b_name,b_address,b_phone,city_name
+from city c ,branch b
+where c.city_id=b.city_id
+and b_name like 'B%' or b_name like 'M%'
+and city_name like 'B%' or city_name like 'C%';
+
+----5.How many branches we have in Bangalore?
+select count(b_name)
+from branch
+where city_id=(select city_id
+from city
+where city_name='Bangalore');
+
+----6.Display the branches which are in the Ring road of any city.
+select b_name
+from branch
+where b_address like '%ring road%';
+
+----7.Display the city name, branch name. Order the data based on the city name.
+select city_name,b_name
+from city c, branch b
+where c.city_id=b.city_id
+order by city_name;
+
+---8.Display the city name and the number of branches in each city.
+select city_name,count(b_id)
+from city c ,branch b
+where c.city_id=b.city_id
+group by city_name;
+
+----9.Display the city name which has most number of branches.
+select city_name
+from city c,branch b
+where c.city_id=b.city_id
+group by city_name
+having count(b_id)=(select max(count(b_id))
+from branch
+group by city_id);
+select * from city;
+select * from branch;
+-----10.Display the city name, population, number of branches in each city.
+select city_name,city_population,count(b_id)
+from city c,branch b
+where c.city_id=b.city_id
+group by city_name,city_population;
