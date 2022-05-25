@@ -1,0 +1,130 @@
+Publishing Company Model
+=========================
+1)Find all the employees whos job is same as Tim
+	Select fname||minit||lname
+	from employee 
+	where job_id=(Select job_id 
+		  	  from employee
+		  	  where fname='Tim');
+
+2)Find out all the employees who got hired in the same year as employee 'Ram'
+	select fname||minit||lname
+	from employee 
+	where hire_date=(select hire_date
+				from employee
+				where fname='Ram');
+
+3)Find all the books/title where we have atleast 3 authors wrote together
+	select title
+	from titles t,title_author ta,author a
+	where t.title_id=ta.title_id
+	and ta.au_id=a.au_id
+	group by title
+	having count(_id)=3;
+
+4)Find the stores where you sold more than 100 Qty of 'Fire and Ice' in the previous month
+	select store_name, sum(Qty)
+	from store s,sales sl,titles t
+	where s.stor_id=sl.stor_id
+	and t.title_id=sl.title_id
+	and to_char(ord_date,'mm')=to_char(sysdate,'mm')-1
+	and title = 'Fire and Ice'
+	group by store_name
+	having sum(Qty)>100;
+
+5)Find books we sold in Store 'X' but not in store 'Y'
+	Select title
+	from titles t,sales s,stores st
+	where t.tiltle_id = s.title_id
+	and st.store_id = s.store_id
+	and Stor_name = 'X'
+	minus
+	Select title
+	from titles t,sales s,stores st
+	where t.tiltle_id = s.title_id
+	and st.store_id = s.store_id
+	and Stor_name = 'Y';
+
+6)Find out the number of books we sold only on saturday and sunday from every store
+	(Need to know if we are selling more on saturday or sunday)
+
+	select count(title),stor_name
+	from titles t,sales s,stores st
+	where t.title_id = s.title_id
+	and st.stor_id = s.stor_id
+	and to_char(ord_date,dy)='Sat'
+	and to_char(ord_date,dy)='Sun'
+	group by stor_name;
+			OR
+	select store_name
+	count(case when to_char(ord_date,dy)='Sat' then title_id)end 'Saturday',
+	count(case when to_char(ord_date,dy)='Sun' then title_id)end 'Sunday',
+	from titles t,sales s,stores st
+	where t.title_id=s.title_id
+	and s.stor_id=st.stor_id
+	group by stor_name;
+-------------------------------------------------------------------------------------------------------------------------
+Test paper on Doctor-appointment-patient
+=========================================
+1) Display the doctors who does not have any appointments today
+	select doc_name
+	from doctor 
+	where doc_id not in (select doc_id
+	   			   from appointment
+				   where to_char(app_date,'dd-mm-yy')=to_char(app_date,'dd-mm-yy');
+
+2)Display day wise number of appointments in the current month
+	select to_char(app_date,'dy'),count(app_id)
+	from appointment 
+	where to_char(app_date,'mm-yy')=to_char(sysdate,'mm-yy')
+	group by to_char(app_data,'dy');
+
+3)Display top 2 doctors base on number of appointment from last 3 years
+	select doc_name
+	from (select doc_name,count(app_id) dense_rank() over(order by count(app_id) desc)r
+	from doctor d,appointment a
+	where a.doc_id=d.doc_id
+	and to_char(app_date,'yy') between to_char(sysdate,'yy') and to_char(sysdate,'yy')-3
+	group by doc_name)abc
+	where r<=2;
+ 
+4)Display the number of patients who have taken appointment more than 3 times in current year
+	select count(pat_id),pat_nm
+	from patient p,appointment a
+	where p.pat_id=a.pat_id
+	and to_char(app_date,'yy')=to_char(sysdate,'yy')
+	group by pat_nm
+	having count(app_id)>3;
+
+5)Display the youngest patient based on age
+	select pat_nm
+	from patient
+	where pat_dob in (select max(pat_dob)
+				from patient);
+
+6)Display all the patients who treated by the doctor whom the patient 'Arjun' was treated
+	select pat_nm
+	from patient p,doctor d,appointment a
+	where p.pat_id = a.pat_id
+	and d.doc_id = a.doc_id
+	and doc_id in (select doc_id
+	       	   from patient p,doctor d,appointment a
+			   where p.pat_id = a.pat_id
+			   and d.doc_id = a.doc_id
+			   and pat_nm='Arjun');	
+
+7)Extract gmail from email_id coloumn
+	Select substr(email_id,instr(email_id,'@')+1 from table_name;
+
+8)Display the common doctors where 'arjun' and 'harish' was treated
+	select doc_name
+	from patient p,doctor d,appointment a
+	where p.pat_id = a.pat_id
+	and d.doc_id = a.doc_id
+	and pat_nm='arjun'
+	intersect
+	select doc_name
+	from patient p,doctor d,appointment a
+	where p.pat_id = a.pat_id
+	and d.doc_id = a.doc_id
+	and pat_nm='harish';
