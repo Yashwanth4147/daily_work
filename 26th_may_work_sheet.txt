@@ -1,0 +1,203 @@
+Customer-Account-Transaction
+------------------------------
+1) Display month name wise number of transaction in the last three years
+select to_char(t_date,'mm'),count(t_id)
+from txn
+where to_char(t_date,'yy')>to_char(sysdate,'yy')-3
+group by to_char(t_date,'mm');
+
+2) Display the customer name who have their emailmin gmail domain
+select c_name
+from customer
+where email like '%gmail%';
+
+3) Display the youngest customer name in each city
+select c_name
+from customer
+where dob,city in (select max(dob),city
+			from customer
+			group by city);
+
+4) Display the the city name that have more number of customers than the city 'hyd'
+select city
+from customer
+group by city
+having count(c_id)>(select count(c_id)
+			  from customer
+			  where city='hyd');
+
+5) Display the city name wise number of accounts opened in the current YTD and previous YTD
+select city,count(a_id)
+from customer c,account a
+where c.c_id=a.c_id
+and open_date between trunch(sysdate,'yy') and sysdate
+and open_date between add_months(trunc(sysdate,'yy'),-12) and add_months(sysdate,-12)
+group by city;
+
+6) Display the state wise number of accounts and number of transaction in the current year
+select state,count(a_id),count(t_id)
+from customer c,account a,txn t
+where c.c_id=a.c_id
+and a.a_id=t.a_id
+and to_char(t_date,'yy')=to_char(sysdate,'yy')
+group by state;
+
+7) Display the customer name who have more number of accounts than the customer 'mike'
+select c_name
+from customer c,account a
+where c.c_id=a.c_id
+group by c_name
+having count(a_id)>(select count(a_id)
+			  from customer c,account a
+			  where c.c_id=a.c_id
+			  and c_name='mike');
+
+8) Display the account type wise number of customer and number of account opened in the current year
+select a_type,count(c_id),account a
+from customer c,account a
+where c.c_id=a.c_id
+and to_char(open_date,'yy')=to_char(sysdate,'yy')
+group by a_type
+
+9) Display customer who have only savings account
+select c_name
+from customer c,accounts a
+where c.c_id=a.c_id
+and a_type = 'savings'
+group by c_name
+having count(a_type)=1;
+
+10) Display the customer name wise total withdrawal and deposit amount in the current month
+select c_name
+sum(case when t_type='withdrawal' then amount end)txn_wd
+sum(case when t_type='savings' then amount end)txn_sa
+from customer c,account a,txn t
+where c.c_id=a.c_id
+and a.a_id=t.a_id
+group by c_name;
+
+======================================================================================================================================
+create table doctor
+(doc_id varchar2(4) primary key,
+doc_name varchar2(20),
+specialty varchar2(20),
+phone number(10),
+emial_id varchar2(20)
+);
+insert all
+into doctor values('D1','arun','orthopedic',9675093453,'arun112@gmail.com')
+into doctor values('D2','tim','general',9674560453,'tim007@gmail.com')
+into doctor values('D3','abhay','heart sergion',9675993453,'abhay1111@yahoo.com')
+into doctor values('D4','gopi','heart sergion',9675993457,'gopi0091@gmail.com')
+into doctor values('D5','ravi','orthopedic',9675093456,'ravi6453@gmail.com')
+select * from dual;
+select * from doctor;
+commit;
+create table patient
+(pat_id varchar2(4) primary key,
+pat_name varchar2(20),
+pat_dob date,
+pat_city varchar2(20),
+pat_state varchar2(20),
+phone number(10)
+);
+insert all
+into patient values('P1','akul','21-may-1995','bangalore','karnataka',9148752347)
+into patient values('p2','aman','19-apr-1998','tamilnadu','hosur',9512896317)
+into patient values('p3','ajay','24-aug-2000','bangalore','karnataka',9987321564)
+into patient values('p4','akshay','16-jan-1997','andrapradesh','chitoor',9112255889)
+into patient values('p5','adi','28-may-1995','tellanganna','vijayavada',9177788821)
+select * from dual;
+select * from patient;
+commit;
+
+create table appointment
+(app_id varchar2(4) primary key,
+app_date date,
+pat_id varchar2(4) references patient(pat_id),
+doc_id varchar2(4) references doctor(doc_id),
+diagnosis varchar2(40)
+);
+
+insert into appointment values('a1','10-jun-16','P1','D1','fracture');
+insert into appointment values('a2','03-may-16','p2','D1','bone cancer');
+insert into appointment values('a3','17-apr-16','p2','D2','fever');
+insert into appointment values('a4','28-oct-15','p3','D2','cough');
+insert into appointment values('a5','10-jun-16','p3','D1','fracture');
+insert into appointment values('a6','1-jan-16','p3','D1','bone cramp');
+insert into appointment values('a7','11-sep-15','p3','D3','heart attack');
+insert into appointment values('a8','30-nov-15','p4','D3','heart hole');
+insert into appointment values('a9','10-nov-15','p4','D3','angioplasty');
+insert into appointment values('a10','1-jan-16','p5','D3','angiogram');
+---select * from dual;
+commit;
+select * from appointment;
+select * from patient;
+select * from doctor;
+truncate table appointment;
+
+==================================================================================
+--1) Display the doctors who does not have any appointments today
+	select doc_name
+	from doctor 
+	where doc_id not in (select doc_id
+	   			   from appointment
+				   where to_char(app_date,'dd-mm-yy')=to_char(app_date,'dd-mm-yy'));
+
+--2)Display day wise number of appointments in the current month
+	select to_char(app_date,'dy'),count(app_id)
+	from appointment 
+	where to_char(app_date,'mm-yyyy')=to_char(sysdate,'mm-yyyy')
+	group by to_char(app_date,'dy');
+
+--3)Display top 2 doctors base on number of appointment from last 3 years
+	select doc_name
+	from (select doc_name,count(app_id), dense_rank() over(order by count(app_id) desc)r
+        from doctor d,appointment a
+        where a.doc_id=d.doc_id
+        and to_char(app_date,'yyyy')>to_char(sysdate,'yyyy')-3
+        group by doc_name)abc
+        where r<=2;
+ 
+--4)Display the number of patients who have taken appointment more than 3 times in current year
+	select count(p.pat_id),p.pat_name
+	from patient p,appointment a
+	where p.pat_id=a.pat_id---(not working)
+	and to_char(app_date,'yyyy')=to_char(sysdate,'yyyy')
+	group by pat_name
+	having count(app_id)>3;
+
+--5)Display the youngest patient based on age
+	select pat_name
+	from patient
+	where pat_dob in (select max(pat_dob)
+				from patient);
+
+--6)Display all the patients who treated by the doctor whom the patient 'Arjun' was treated
+	select p.pat_name
+	from patient p,doctor d,appointment a
+	where p.pat_id = a.pat_id
+	and d.doc_id = a.doc_id
+	and d.doc_id in (select d.doc_id
+	       	   from patient p,doctor d,appointment a
+			   where p.pat_id = a.pat_id
+			   and d.doc_id = a.doc_id
+			   and p.pat_name='akul');	
+
+--7)Extract gmail from email_id coloumn
+	Select substr(emial_id,instr(emial_id,'@')+1) from doctor;
+
+--8)Display the common doctors where 'arjun' and 'harish' was treated
+	select doc_name
+	from patient p,doctor d,appointment a
+	where p.pat_id = a.pat_id
+	and d.doc_id = a.doc_id
+	and pat_name='ajay'
+	intersect
+	select doc_name
+	from patient p,doctor d,appointment a
+	where p.pat_id = a.pat_id
+	and d.doc_id = a.doc_id
+    and pat_name='adi';
+    
+    select trunc(sysdate,'yyyy') from dual;
