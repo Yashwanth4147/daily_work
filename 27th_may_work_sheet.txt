@@ -1,0 +1,151 @@
+Publishing company model
+-------------------------
+
+create table pub_job
+(job_id varchar2(5) primary key,
+job_designation varchar2(20));
+
+insert all
+into pub_job values('j1','HR')
+into pub_job values('j2','Operations')
+into pub_job values('j3','spock')
+into pub_job values('j4','Manager')
+into pub_job values('j5','Finance')
+select * from dual;
+
+create table pub_employee
+(emp_id varchar2(5) primary key,
+emp_name varchar2(20),
+emp_hire_date date,
+job_id varchar(20) references pub_job(job_id));
+
+insert all
+into pub_employee values('e1','ram','01-apr-2021','j1')
+into pub_employee values('e2','seetha','10-may-2022','j2')
+into pub_employee values('e3','lakshman','12-may-2021','j5')
+into pub_employee values('e4','raju','01-aug-2021','j4')
+into pub_employee values('e5','raga','23-sep-2022','j3')
+into pub_employee values('e6','tim','01-apr-2021','j1')
+select * from dual;
+
+
+create table pub_book
+(book_id varchar2(5) primary key,
+book_name varchar(20),
+price number(5),
+advance number(5),
+pub_date date);
+
+insert all
+into pub_book values('b1','fire and ice',500,150,'19-apr-2001')
+into pub_book values('b2','rock build',700,'','19-jun-2001')
+into pub_book values('b3','dreams of night',800,100,'10-oct-2001')
+into pub_book values('b4','work for success',1500,250,'10-jan-2001')
+into pub_book values('b5','money motivates',1200,50,'12-dec-2001')
+into pub_book values('b6','god is single',1700,'','16-feb-2001')
+into pub_book values('b7','who are you',1100,500,'18-mar-2001')
+select * from dual;
+
+
+
+create table pub_stores
+(store_id varchar2(5) primary key,
+store_name varchar(20),
+city varchar2(20),
+state varchar2(20),
+zip_code number(7));
+
+insert all
+into pub_stores values('s1','sapna','bangalore','kar',560078)
+into pub_stores values('s2','giri','andhra','tirupati',560072)
+into pub_stores values('s3','book plaza','tamil nadu','hosur',560074)
+into pub_stores values('s4','amazon book','andhra','kadapa',560072)
+into pub_stores values('s5','sangeetha book','bangalore','kar',560078)
+select * from dual;
+
+
+create table pub_sales
+(sales_id varchar2(5) primary key,
+book_id varchar(20) references pub_book(book_id),
+store_id varchar2(5) references pub_stores(store_id),
+ord_date date,
+QTY number(3));
+
+insert all
+into pub_sales values('sa1','b2','s1','06-may-2021',10)
+into pub_sales values('sa2','b1','s3','12-apr-2022',20)
+into pub_sales values('sa3','b4','s2','16-jul-2022',10)
+into pub_sales values('sa4','b3','s4','18-sep-2021',20)
+into pub_sales values('sa5','b6','s2','24-mar-2021',50)
+into pub_sales values('sa6','b5','s5','22-dec-2021',30)
+into pub_sales values('sa7','b7','s4','17-jan-2022',20)
+into pub_sales values('sa8','b1','s1','19-apr-2022',10)
+select * from dual;
+
+
+select * from pub_sales;
+select * from pub_stores;
+select * from pub_book;
+select * from pub_job;
+select * from pub_employee;
+commit;
+
+
+--1)find all the emp whos job is same as tim
+select emp_name
+from pub_employee
+where job_id=(select job_id
+                from pub_employee
+                where emp_name='tim');
+                
+--2)find out all the employee who got hired in the same year as employee 'Ram'
+select emp_name
+from pub_employee
+where emp_hire_date=(select emp_hire_date
+                     from pub_employee
+                     where emp_name='ram');
+
+
+              rest querys i will share by tomorrow end
+
+plsql
+--------
+
+select * from customer;
+declare
+var_custid customer.cust_id%type;
+var_custname customer.cust_name%type;
+begin 
+var_custid := '&customer_id';
+select cust_name into var_custname
+from customer
+where cust_id=var_custid;
+dbms_output.put_line(var_custname);
+exception
+when no_data_found then
+dbms_output.put_line('No sutch customers');
+end;
+----------------------------------------------------------------
+create or replace procedure sp_validate(p_cust_id customer.cust_id%type) as 
+v_cname customer.cust_name%type;
+begin
+select cust_name into v_cname
+from customer
+where cust_id=p_cust_id;
+dbms_output.put_line(v_cname);
+exception
+when no_data_found then
+dbms_output.put_line('Invalid customer id');
+end;
+
+exec sp_validate(3)
+------------------------------------------------------------------
+create or replace procedure sp_print_char as
+n varchar2(30):='AROHA';
+begin
+for i in 1..length(n) loop
+dbms_output.put_line(substr(n,i,1));
+end loop;
+end;
+
+exec sp_print_char
