@@ -1,0 +1,215 @@
+Publishing company model
+-------------------------
+
+--1)find all the emp whos job is same as tim
+select emp_name
+from pub_employee
+where job_id=(select job_id
+                from pub_employee
+                where emp_name='tim');
+                
+--2)find out all the employee who got hired in the same year as employee 'Ram'
+select emp_name
+from pub_employee
+where emp_hire_date=(select emp_hire_date
+                     from pub_employee
+                     where emp_name='ram');
+                     
+--4)Find the stores where you sold more than 100 Qty of 'Fire and Ice' in the previous month
+	select store_name, sum(Qty)
+	from pub_stores ps,pub_sales sl,pub_book pb
+	where ps.store_id=sl.store_id
+	and sl.book_id=pb.book_id
+	and to_char(ord_date,'mm')=to_char(sysdate,'mm')-1
+	and book_name = 'Fire and Ice'
+	group by store_name
+	having sum(Qty)>100;
+
+--5)find books sold in store sapna but not in book plaza
+Select book_name
+from pub_book pb,pub_sales ps,pub_stores pst
+where pb.book_id = ps.book_id
+and ps.store_id = pst.store_id
+and Store_name = 'sapna'
+minus
+Select book_name
+from pub_book pb,pub_sales ps,pub_stores pst
+where pb.book_id = ps.book_id
+and ps.store_id = pst.store_id
+and Store_name = 'book plaza';
+
+--6)Find out the number of books we sold only on saturday and sunday from every store
+--(Need to know if we are selling more on saturday or sunday)
+
+select store_name,
+count(case when to_char(ord_date,'dy')='sat' then pb.book_id end) saturday,
+count(case when to_char(ord_date,'dy')='sun' then pb.book_id end) Sunday
+from pub_book pb,pub_sales ps,pub_stores pst
+where pb.book_id = ps.book_id
+and ps.store_id = pst.store_id
+group by store_name;
+----------------OR-------------------------
+select pst.store_name,count(pb.book_id)
+from pub_book pb,pub_sales ps,pub_stores pst
+where pb.book_id = ps.book_id
+and ps.store_id = pst.store_id
+and to_char(ord_date,'dy')='Sat'
+and to_char(ord_date,'dy')='Sun'
+group by store_name;
+
+
+ONLY QUESTION NUMBER 3 IS REMAINING FOR EXECUTION I WILL DO THIS AS SOON AS POSIBLE
+
+
+PLSQL SIMPLE PROGRAMS ON LOOP STATMENTS 
+----------------------------------------
+----1. Write a Plsql block to print numbers from 1 …10.
+begin
+    for i in 1..10 loop
+        dbms_output.put_line(i);
+    end loop;
+end;
+
+set serveroutput on
+
+----2. Write a Plsql block to find the circumference and area of a circle.(2*pi*r, pi*r*r).
+declare
+    circumference number(2);
+    area number(2);
+    radius number(2);
+    pi number(2);
+begin
+    circumference:=6;
+    area:=6;
+    radius:=3;
+    pi:=3;
+        circumference:=2*pi*radius;
+        area:=pi*radius*radius;
+            dbms_output.put_line('The circumference is : '||circumference);
+            dbms_output.put_line('The area is : '||area);
+end;
+
+----3. Write a plsql block by passing 3 numbers and find the largest no. in that 3 numbers.
+declare 
+    a number(3);
+    b number(3);
+    c number(3);
+begin
+    a:=120;
+    b:=80;
+    c:=60;
+        if (a>b) and (a>c) then
+            dbms_output.put_line(a||' A is greatest');
+                elsif (b>a) and (b>c) then
+                    dbms_output.put_line(b||' B is greatest');
+                        else
+                            dbms_output.put_line(c||' C is greatest');
+        end if;
+end;
+
+----4. Write a plsql block to print ‘*’ as
+      -- *****
+      -- ****
+      -- ***
+      -- **                                                                           
+      -- *
+declare
+    n varchar(10);
+begin
+    n:='*****';
+        for i in reverse 1..length(n) loop
+            dbms_output.put_line(substr(n,1,i));
+        end loop;
+end;
+
+----5. Write a plsql block to print all the dates from first date till last date by passing year at run time.
+declare
+    start_date date;
+    end_date date;
+begin
+    start_date:=trunc(sysdate,'yy');
+    end_date:=add_months(start_date,12)-1;
+        while start_date<=end_date loop
+            dbms_output.put_line(start_date);
+                start_date:=start_date+1;
+        end loop;
+end;
+
+==============================================================================================================================
+----write a prg to print highest number among those
+declare
+    a int(5);
+    b int(5);
+    c int(5);
+    d int(5);
+    e int(5);
+begin
+    a:=221;
+    b:=421;
+    c:=841;
+    d:=435;
+    e:=967;
+        if (a>b) and (a>c) and (a>d) and (a>e) then
+        dbms_output.put_line(a||'    A is greatest of all');
+            elsif (b>a) and (b>c) and (b>d) and (b>e) then
+            dbms_output.put_line(b||'    B is greatest of all');
+                elsif (c>a) and (c>b) and (c>d) and (c>e) then
+                dbms_output.put_line(c||'    C is greatest of all');
+                    elsif (d>a) and (d>b) and (d>c) and (d>e) then
+                    dbms_output.put_line(d||'    D is greatest of all');
+                    else
+                    dbms_output.put_line(e||'    E is greatest of all');
+        end if;
+end;
+
+set serveroutput on
+--------------------------------------------------------------------------------------
+/
+create or replace procedure sp_gratest_num as
+    a int(2);
+    b int(2);
+    c int(2);
+begin
+    a:=&a;
+    b:=&b;
+    c:=&c;
+        if (a>b) and (a>c) then
+        dbms_output.put_line(a||'    A is greatest of all');
+            elsif (b>a) and (b>c) then
+            dbms_output.put_line(b||'    B is greatest of all');
+            else
+            dbms_output.put_line(c||'    C is greatest of all');
+        end if;
+end;
+/
+exec sp_gratest_num;
+--------------------------------------------------------------------------------
+---even numbers between 0 to 10
+begin
+    for i in 1..10 loop
+        if mod(i,2)=0 then
+        dbms_output.put_line(i);
+        end if;
+    end loop;
+end;
+-----------------------------------------------------------
+/
+create or replace procedure sp_even_num_range as
+begin
+    for i in 10..20 loop
+        if mod(i,2)=0 then
+        dbms_output.put_line(i);
+        end if;
+    end loop;
+end;
+/
+exec sp_even_num_range;
+--------------------------------------------------------------------------------
+---odd numbers between 0 to 10
+begin
+    for i in 1..10 loop
+        if mod(i,2)!=0 then
+        dbms_output.put_line(i);
+        end if;
+    end loop;
+end;
