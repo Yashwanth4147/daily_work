@@ -1,0 +1,140 @@
+SQL Query 
+=========
+--1)find all the emp whos job is same as tim
+    select emp_name
+    from pub_employee
+    where job_id=(select job_id
+                  from pub_employee
+                  where emp_name='tim');
+                
+--2)find out all the employee who got hired in the same year as employee 'Ram'
+    select emp_name
+    from pub_employee
+    where emp_hire_date=(select emp_hire_date
+                         from pub_employee
+                         where emp_name='ram');
+        
+        
+--3)Find all the books/title where we have atleast 3 authors wrote together
+	select pb.book_name
+	from pub_book pb,pub_author pa
+	where pb.author_id=pa.author_id
+	group by pb.book_name
+	having count(pa.author_id)=1;
+    
+--4)Find the stores where you sold more than 100 Qty of 'Fire and Ice' in the previous month
+	select store_name, sum(Qty)
+	from pub_stores ps,pub_sales sl,pub_book pb
+	where ps.store_id=sl.store_id
+	and sl.book_id=pb.book_id
+	and to_char(ord_date,'mm')=to_char(sysdate,'mm')-1
+	and book_name = 'Fire and Ice'
+	group by store_name
+	having sum(Qty)>100;
+
+--5)find books sold in store sapna but not in book plaza
+    Select book_name
+    from pub_book pb,pub_sales ps,pub_stores pst
+    where pb.book_id = ps.book_id
+    and ps.store_id = pst.store_id
+    and Store_name = 'sapna'
+    minus
+    Select book_name
+    from pub_book pb,pub_sales ps,pub_stores pst
+    where pb.book_id = ps.book_id
+    and ps.store_id = pst.store_id
+    and Store_name = 'book plaza';
+
+--6)Find out the number of books we sold only on saturday and sunday from every store
+--(Need to know if we are selling more on saturday or sunday)
+    select store_name,book_name,
+    count(case when to_char(ord_date,'dy')='sat' then pb.book_id end) saturday,
+    count(case when to_char(ord_date,'dy')='sun' then pb.book_id end) Sunday
+    from pub_book pb,pub_sales ps,pub_stores pst
+    where pb.book_id = ps.book_id
+    and ps.store_id = pst.store_id
+    group by store_name,book_name;
+
+There was small mistakes and error in the query i have changed and fixed the error 
+-----------------------------------------------------------------
+
+--1.	Query to find out country wise resort count.
+select country_name,count(res_id)
+from country c,resort r
+where c.country_id=r.country_id
+group by country_name;
+---2.	Query to display country wise customer count.
+select country_name,count(cust_id)
+from country c,customer cu
+where c.country_id=cu.country_id
+group by country_name;
+--3.	Query to display country, resort count and customer count.
+select country_name,count(res_id),count(cust_id)
+from country c,resort r,customer cu
+where c.country_id=r.country_id(+)
+and c.country_id=cu.country_id(+)
+group by country_name;
+---5.	Display countries in which we don’t have any resorts.
+select country_name
+from country
+where country_id not in 
+(select country_id 
+from resort);
+---6.	Display countries in which we have minimum of 100 customers.
+select country_name,count(cust_id)
+from country c,customer cu
+where c.country_id=cu.country_id
+group by country_name
+having count(cust_id)>2;
+---7.	Display how many resorts we have in the country where resort ‘Beach front’ is
+select count(res_id)
+from resort
+where country_id =-----------(ans not currect)
+(select country_id
+from resort
+where res_type='Beach Resort');
+---8.	Display customers whose name starts with F or R and who are either from India or Srilanka.
+select distinct(cust_name)
+from customer cu,country c
+where cu.country_id=c.country_id
+and cu.cust_name like 'K%'
+or cu.cust_name like 'R%'
+and c.country_name in ('India','Srilanka');
+
+PLSQL
+-----
+----7. Write a plsql block to display the odd numbers from 1 to 50.
+begin
+dbms_output.put_line('The odd numbers in the range od 1 to 50 are : ');
+    for i in 1..50 loop
+        if mod(i,2)!=0 then
+        dbms_output.put_line(i);
+        end if;
+    end loop;
+end;
+
+----8. Write a plsql block to print the employee details whose name starts with s or t or j or c.
+select * from employee;
+declare
+    var_emp_name employee.emp_name%type;
+        cursor detail_emp is
+            select emp_name
+            from employee
+            where emp_name like 'S%'
+            or emp_name like 'T%'
+            or emp_name like 'j%'
+            or emp_name like 'R%';
+begin 
+        for i in detail_emp loop
+            dbms_output.put_line(i.emp_name);
+        end loop;
+end;
+----10. Write a block to print the given string vertically.
+declare
+var_str varchar2(30);
+begin
+var_str:='AROHA';
+for i in 1..length(var_str) loop
+dbms_output.put_line(substr(var_str,i,1));
+end loop;
+end;
