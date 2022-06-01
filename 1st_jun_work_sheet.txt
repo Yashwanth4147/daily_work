@@ -1,0 +1,87 @@
+declare
+    var_city varchar(30); 
+    var_state varchar(30);
+begin
+    var_city :='&City_Name';
+    var_state :='&state_Name';
+        dbms_output.put_line('CITY NAME IS'||' = '||var_city);
+        dbms_output.put_line('STATE NAME IS'||' = '||var_state);
+end;
+set serveroutput on
+----------------------------------------
+--Taking the input from user and displaying the out like
+--CITY = bangalore
+--STATE = mumbai
+/
+declare 
+    var_city_state varchar(30);
+begin
+    var_city_state:='&CITY_AND_STATE_NAME';
+        dbms_output.put_line('CITY'||' = '||substr(var_city_state,1,instr(var_city_state,',')-1));
+        dbms_output.put_line('STATE'||' = '||substr(var_city_state,instr(var_city_state,',')+1));
+end;     
+/
+----------------------------------------------------
+--Taking the input from user and displaying the out like
+--CITY = bangalore
+--STATE = mumbai
+/
+declare 
+    var_city_state varchar(30);
+    var_city varchar2(30);
+    var_state varchar2(30);
+begin
+    var_city_state:='&CITY_AND_STATE_NAME';
+    var_city:=substr(var_city_state,1,instr(var_city_state,',')-1);
+    var_state:=substr(var_city_state,instr(var_city_state,',')+1);
+        dbms_output.put_line('CITY'||' = '||var_city);
+        dbms_output.put_line('STATE'||' = '||var_state);
+end;
+/
+-------------------------------------------------------------
+--Handling the error when the user dont give any comma between the city and state
+/
+declare 
+    var_city_state varchar(30);
+    var_city varchar2(30);
+    var_state varchar2(30);
+begin
+    var_city_state:='&CITY_AND_STATE_NAME';
+        if instr(var_city_state,',')=0 then
+            raise_application_error(-20003,'There should be seperation between city and state');
+        else    
+            var_city:=substr(var_city_state,1,instr(var_city_state,',')-1);
+            var_state:=substr(var_city_state,instr(var_city_state,',')+1);
+                dbms_output.put_line('CITY'||' = '||var_city);
+                dbms_output.put_line('STATE'||' = '||var_state);
+        end if;  
+end;
+/
+-------------------------------------------------------------------------------
+
+--(city)
+select substr('bangalore,blr',1,instr('bangalore,blr',',')-1)from dual;
+---(state)
+select substr('mumbai,kolar',instr('mumbai,kolar',',')+1)from dual;
+
+----------------------------------------------------------------------------------
+--Input as 'Bangalore,chennai,mumbai' and out put shoud be like
+--CITY1 = Bangalore
+--CITY2 = chennai
+--CITY3 = mumbai
+/
+declare 
+    var_city_state varchar(30);
+    var_city1 varchar2(30);
+    var_city2 varchar2(30);
+    var_city3 varchar2(30);
+begin
+    var_city_state:='Bangalore,chennai,mumbai';
+            var_city1:=substr(var_city_state,1,instr(var_city_state,',')-1);
+            var_city2:=substr(var_city_state,instr(var_city_state,',')+1,instr(var_city_state,',',1,2)-instr(var_city_state,',')-1);
+            var_city3:=substr(var_city_state,instr(var_city_state,',',1,2)+1);  
+        dbms_output.put_line('CITY1'||' = '||var_city1);
+        dbms_output.put_line('CITY2'||' = '||var_city2);
+        dbms_output.put_line('CITY3'||' = '||var_city3);
+end;
+/
