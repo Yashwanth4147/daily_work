@@ -1,0 +1,110 @@
+declare
+    start_date date;
+    end_date date;
+begin
+    start_date:=trunc(sysdate,'yy');
+    end_date:=add_months(start_date,12)-1;
+        while start_date<=end_date loop
+            dbms_output.put_line(start_date);
+                start_date:=start_date+1;
+        end loop;
+end;
+-------------------------------------------------------------------------------------------------------
+declare
+    var_inp_date date;
+    var_date number(2);
+    var_day varchar(30);
+    var_mon varchar(10);
+    var_year number(4);
+    var_quater number(2);
+begin
+    var_inp_date:='&the_date';
+    var_date:=to_char(var_inp_date,'dd');
+    var_day:=to_char(var_inp_date,'day');
+    var_mon:=to_char(var_inp_date,'month');
+    var_year:=to_char(var_inp_date,'yyyy');
+    var_quater:=to_char(var_inp_date,'q');
+        dbms_output.put_line('Todays date is : '||var_date);
+        dbms_output.put_line('Todays day is : '||var_day);
+        dbms_output.put_line('Month is : '||var_mon);
+        dbms_output.put_line('The year is : '||var_year);
+        dbms_output.put_line('The quater of the date is : '||var_quater);
+            if var_day in ('sat','sun') then
+                dbms_output.put_line('This is a weekend');
+                else 
+                ---var_day in ('monday','tuesday','wednesday','thersday','friday') then
+                dbms_output.put_line('This not a weekend');
+                --else
+               -- dbms_output.put_line('Week end is near by');
+            end if;
+end;
+------------------------------------------------------------
+declare
+var_name varchar2(30):='chennai';
+begin
+for i in 1..length(var_name) loop
+dbms_output.put_line(substr(var_name,1,i));
+end loop;
+end;
+/
+set serveroutput on
+-------------------------------------------------------------------------------------
+select * from tab;
+select * from dept;
+/
+declare
+    var_dept_no dept.deptno%type;
+    var_dept_name dept.dname%type;
+    var_location dept.loc%type;
+begin
+    var_dept_no := &department_number;
+    var_dept_name :='&department_name';
+    var_location :='&department_location';
+        select dname into var_dept_name
+        from dept
+        where deptno=var_dept_no;
+            dbms_output.put_line('The department number are :'||var_dept_no);
+exception
+    when no_data_found then
+        dbms_output.put_line('There is no sutch department excisting : '||var_dept_no);
+end;
+/
+-----------------------------------------------------------------------------------
+/
+declare
+    var_dept_no dept.deptno%type;
+    var_dept_name dept.dname%type;
+    var_location dept.loc%type;
+begin
+    var_dept_no := &department_number;
+    var_dept_name :='&department_name';
+    var_location :='&department_location';
+        select dname into var_dept_name
+        from dept
+        where deptno=var_dept_no;
+            dbms_output.put_line('The department number are :'||var_dept_no);
+exception
+    when no_data_found then
+        dbms_output.put_line('There is no sutch department excisting : '||var_dept_no);
+        insert into dept values(var_dept_no,var_dept_name,var_location);
+end;
+/
+select * from dept;
+---------------------------------------------------------------------------------
+----2. Write a Plsql block to find the circumference and area of a circle.(2*pi*r, pi*r*r).
+declare
+    circumference number(2);
+    area number(2);
+    radius number(2);
+    pi number(2);
+begin
+    circumference:=6;
+    area:=6;
+    radius:=3;
+    pi:=3;
+        circumference:=2*pi*radius;
+        area:=pi*radius*radius;
+            dbms_output.put_line('The circumference is : '||circumference);
+            dbms_output.put_line('The area is : '||area);
+end;
+
