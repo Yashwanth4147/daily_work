@@ -1,0 +1,108 @@
+declare
+char1 varchar(20):='&char1';
+begin 
+if regexp_like(char1,'^[0-9]+$') then
+dbms_output.put_line('The given input is a number');
+elsif regexp_like(char1,'^[a-z A-Z]+$') then
+dbms_output.put_line('The given input is a character string');
+else
+dbms_output.put_line('The given input is a spectial char string');
+end if;
+end;
+----------------------------------------------------------------------------
+declare
+var_custid customer.cust_id%type;
+var_custname customer.cust_name%type;
+begin 
+var_custid := '&customer_id';
+select cust_name into var_custname
+from customer
+where cust_id=var_custid;
+dbms_output.put_line(var_custname);
+exception
+when no_data_found then
+dbms_output.put_line('No sutch customers');
+end;
+----------------------------------------------------------------------------
+declare
+v_rec customer%rowtype;
+begin
+v_rec:='&city';
+select * into v_rec
+from customer
+where cust_city=p_cust_city;
+dbms_output.put_line(v_rec.cust_name||','||v_rec.cust_phone||','||v_rec.cust_city);
+exception
+when too_many_rows then
+dbms_output.put_line('more rows are selected');
+end;
+-------------------------------------------------------------------------------
+create or  replace procedure sp_invalid_num as
+v_sal emp.sal%type;
+begin
+select sal into v_sal
+from emp
+where empno='abc';
+exception
+when invalid_number then
+dbms_output.put_line('wrong datatype');
+end;
+
+exec sp_invalid_num;
+---------------------------------------------------------------------------------
+select * from guests;
+/
+declare
+    var_cust_name customer_guest.c_nm%type;
+    var_cust_id customer_guest.c_id%type;
+    var_cust_phone customer_guest.c_phone%type;
+        cursor cur_var_cust_gust is
+            select c_nm
+            from customer_guest
+            where c_id=var_cust_id;
+begin
+    var_cust_id:='&customer_detaild';
+        open cur_var_cust_gust;
+            loop
+                fetch cur_var_cust_gust into var_cust_name;
+                exit when cur_var_cust_gust%notfound;
+                dbms_output.put_line(var_cust_name);
+            end loop;
+        close cur_var_cust_gust;
+end;
+/
+--------------------------------------------------------------------------------------
+select * from cust;
+select * from account;
+create or replace procedure sp_acc_id_invd(p_acc_id number) as 
+v_cname customer.cust_name%type;
+begin
+select cust_name into v_cname 
+from account,cust
+where acc_id=p_acc_id
+and account.cust_id=cust.cust_id;
+dbms_output.put_line(v_cname);
+exception
+when no_data_found then
+dbms_output.put_line('invalid_account_id');
+end;
+
+exec sp_acc_id_invd(20)
+-------------------------------------------------------------------------------------------
+create or  replace procedure sp_value_error as
+v_acc_ball account.acc_ball%type;
+begin
+select acc_type into v_acc_ball
+from account
+where acc_id=40;
+exception
+when value_error then
+dbms_output.put_line('storing in wrong values');
+end;
+
+exec sp_value_error
+
+
+
+ALONG WITH THIS I HAVE CREATED TABLES ON MOVIE,ACTOR,ROLE AND MOVIE TYPE AND INSERTED VALUES 
+I WILL QRITE THE QUERY AND CHECK IT BY TOMORROW END.
