@@ -1,0 +1,233 @@
+
+create table date_dimension
+(DATE_KEY                 NUMBER(10), 
+calendar_DATE            DATE,         
+DAY_NUMBER_OF_WEEK       NUMBER(10),   
+DAY_NUMBER_OF_MONTH      NUMBER(10),   
+DAY_NUMBER_OF_YEAR       NUMBER(10),   
+WEEK_NO_OF_MONTH         NUMBER(10),   
+WEEK_NO_YEAR             NUMBER(10),   
+MONTH_NO                 NUMBER(10),   
+MONTH_SHORT_NAME         VARCHAR2(40), 
+MONTH_FULL_NAME          VARCHAR2(40), 
+QTR_NO                   NUMBER(10),   
+CALENDER_YEAR            NUMBER(10),   
+FISCAL_MONTH             NUMBER(10),   
+FISCAL_WEEK              NUMBER(10),   
+FISCAL_QTR               NUMBER(10),   
+FISCAL_YEAR              VARCHAR2(20), 
+WEEK_DAY_FLAG	       VARCHAR2(20), 
+HOLIDAY_FLAG		 CHAR(5));
+
+create sequence sq_date_dimension;
+
+create or replace procedure sp_date_dim(v_Date in date) as
+    start_date date;
+    end_date date;
+    v_count int;
+begin
+    start_date:=trunc(v_date,'yyyy');
+    end_date:=add_months(start_date,12);
+
+        select count(date_key) into v_count
+        from date_dimension
+        where calender_year=to_char(v_date,'yyyy');
+            if v_count=0 then
+            while start_date<end_date loop
+            insert into date_dimension select
+            sq_date_dimension.nextval,
+            start_date,
+                 to_char(start_date,'d'),
+                 to_char(start_date,'dd'),
+                 to_char(start_date,'ddd'),
+                 to_char(start_date,'w'),
+                 to_char(start_date,'ww'),
+                 to_char(start_date,'mm'),
+                 to_char(start_date,'mon'),
+                 to_char(start_date,'month'),
+                 to_char(start_date,'q'),
+                 case when to_char(start_date,'mm')  <=6 then 1
+            else 2 end,
+                 to_char(start_date,'yyyy'),
+                 to_char(add_months(start_date,-3),'mm'),
+                 to_char(add_months(start_date,-3),'ww'),
+                 to_char(add_months(start_date,-3),'q'),
+                 to_char(add_months(start_date,-3),'yyyy'),
+                 case when to_char(start_date,'dy') not in ('mon','tue','wed','thu','fri','sat','sun') then 'Y'
+            else 'N' end
+         from dual;
+                    start_date:=start_date+1;
+
+            end loop;
+            else
+                dbms_output.put_line('Dates already populated for '||to_char(v_date,'yyyy'));
+            end if;
+end;
+
+exec sp_date_dim ('01-may-2021');
+select * from  date_dimension;
+set serveroutput on
+=============================================================================================================================
+create table actor (
+actor_id number(5) primary key,
+actor_name varchar2(10),
+gender varchar2(10),
+dob date,
+email varchar2(30),
+phone number(12),
+city varchar2(30),
+start_date date);
+
+INSERT INTO ACTOR VALUES(101,'RAMYA','F','20-mar-1989','RAMYA@GMAIL.COM',8574378956,'BANGALORE','12-mar-2016');
+INSERT INTO ACTOR VALUES(102,'NTR','M','12-mar-1987','NTR2@GMAIL.COM',857437895646,'HYDERABAD','11-jun-2006');
+INSERT INTO ACTOR VALUES(103,'DEEPIKA','F','20-aug-1976','DEEPIKA@GMAIL.COM',8938573443,'MUMBAI','27-jul-2008');
+INSERT INTO ACTOR VALUES(104,'PRAJWAL','M','20-oct-1965','PRJAWAL@GMAIL.COM',8573874746,'BANGALORE','22-aug-2010');
+INSERT INTO ACTOR VALUES(105,'MEGANA','F','20-dec-1985','MEGHANA@GMAIL.COM',857437647646,'MYSORE','18-sep-2003');
+INSERT INTO ACTOR VALUES(106,'SUDEEP','M','20-apr-1974','SUDEEP@GMAIL.COM',8574308744,'HUBALI','05-oct-2021');
+INSERT INTO ACTOR VALUES(107,'PRIYANKA','F','20-jul-1988','PRIYANKA@GMAIL.COM',8574236498,'MANGALORE','11-dec-2022');
+---------------------------------------------------------------------------------------------------------------------------
+create table movie_type(
+movie_type_id number(5) primary key,
+movie_type_desc varchar2(30));
+
+insert into movie_type values(100,'action');
+insert into movie_type values(101,'thriller');
+insert into movie_type values(102,'romance');
+insert into movie_type values(103,'comedy');
+insert into movie_type values(104,'horror');
+insert into movie_type values(105,'war');
+insert into movie_type values(106,'history');
+insert into movie_type values(107,'documentry');
+insert into movie_type values(108,'science fiction');
+insert into movie_type values(109,'biographical');
+insert into movie_type values(110,'sports');
+-------------------------------------------------------------------------------------------------------------------------
+create table movie (
+movie_id number(5) primary key,
+movie_name varchar2(20),
+release_date date,
+movie_type_id number(5) references movie_type(movie_type_id));
+
+insert into movie values(200,'kgf','21-dec-2018',100);
+insert into movie values(201,'rrr','10-jan-2022',100);
+insert into movie values(202,'pushpa','10-july-2021',100);
+insert into movie values(203,'uturn','30-jun-2016',101);
+insert into movie values(204,'vikram vedha','12-feb-2018',101);
+insert into movie values(205,'drishya','01-may-2016',101);
+insert into movie values(206,'premam','18-aug-2015',102);
+insert into movie values(207,'magadheera','10-mar-2012',102);
+insert into movie values(208,'adyaksha','05-sep-2015',103);
+insert into movie values(209,'pizza','27-jul-2014',104);
+insert into movie values(210,'bahubali','10-jun-2016',105);
+insert into movie values(211,'sangolli rayanna','21-oct-2015',106);
+insert into movie values(212,'sachin billiob dreams','24-apr-2017',107);
+insert into movie values(213,'ms dhoni untold stroy','7-jul-2017',109);
+insert into movie values(214,'lagaan','04-mar-2001',110);
+-----------------------------------------------------------------------------------------------------------------------
+create table role(
+role_id number(5) primary key,
+actor_id number(5)references actor(actor_id),
+movie_id number(5) references movie(movie_id),
+start_date date,
+end_date date,
+role_desc varchar2(30));  
+
+INSERT INTO ROLE VALUES(10,102,210,'12-mar-2001','22-apr-2003','HERO');
+INSERT INTO ROLE VALUES(11,105,214,'12-mar-2002','22-apr-2005','SIDE ACTOR');
+INSERT INTO ROLE VALUES(12,105,210,'12-mar-2007','22-apr-2009','COMEDIAN');
+INSERT INTO ROLE VALUES(13,107,206,'12-mar-2010','22-apr-2012','HERO');
+INSERT INTO ROLE VALUES(14,101,207,'12-mar-2020','22-apr-2022','HEROIN');
+INSERT INTO ROLE VALUES(15,102,211,'12-mar-2006','22-apr-2012','TWIN CHARCTOR');
+commit;
+INSERT INTO ROLE VALUES(16,102,211,'12-mar-2022','22-apr-2023','TWIN CHARCTOR');
+INSERT INTO ROLE VALUES(17,102,214,'12-mar-2022','22-apr-2024','TWIN CHARCTOR');
+select * from actor;
+select * from movie_type;
+select * from movie;
+select * from role;
+----------------------------------------------------------------------------------------------------------------------
+--1.	Display the youngest actor name
+select actor_name
+from actor
+where dob=(select max(dob)
+            from actor);
+            
+select * 
+from(select actor_name,dense_rank() over(order by dob desc)r
+from actor)
+where r<=1;
+
+--2.	Display the youngest and the oldest actor name
+select actor_name
+from actor
+where dob=(select max(dob)
+            from actor)
+union
+select actor_name
+from actor
+where dob=(select min(dob)
+            from actor);
+            
+--3.	Display the movies of type action released in the current year
+select movie_name,movie_type_desc
+from movie_type mt,movie m
+where mt.movie_type_id=m.movie_type_id
+and movie_type_desc='action'
+and to_char(release_date,'yy')=to_char(sysdate,'yy');
+
+--4.	Display all the actor names who are currently not associated with any movies
+select actor_name
+from actor
+where actor_id not in (select actor_id
+                        from role
+                        where start_date < sysdate and end_date > sysdate);
+
+--5.	Display movie names that have more than 10 actors
+select movie_name 
+from movie m,role r
+where m.movie_id=r.movie_id
+group by movie_name
+having count(actor_id)>1;
+
+--6.	Display the actor names who played more than one role in the same movie
+select actor_name,movie_name
+from actor a,role r,movie m
+where a.actor_id=r.actor_id
+and r.movie_id=m.movie_id
+group by actor_name,movie_name
+having count(role_id)>1;
+
+--7.	Display movie type wise no of movies and no of roles
+select mt.movie_type_desc,count(m.movie_id),count(r.role_id)
+from movie_type mt,movie m,role r
+where mt.movie_type_id=m.movie_type_id
+and m.movie_id=r.movie_id
+group by mt.movie_type_desc;
+
+--8.	Display the movie names that have more no of roles than the movie ‘Top Gun’
+select movie_name,count(role_id)
+from movie m,role r
+where m.movie_id=r.movie_id
+group by movie_name
+having count(role_id)>(select count(role_id)
+                       from movie m,role r
+                       where m.movie_id=r.movie_id 
+                       and movie_name='rrr');
+                       
+--9.	Display the actor names who are associated with more than one movie currently
+select a.actor_name
+from actor a,role r,movie m
+where a.actor_id=r.actor_id
+and m.movie_id=r.movie_id
+and r.start_date < sysdate and r.end_date > sysdate
+group by actor_name
+having count(m.movie_id)>1;
+
+--10.	Display the movie name wise no of male and female actors
+select m.movie_name,
+count(case when gender='M' then a.actor_id end)male,
+count(case when gender='F' then a.actor_id end)female
+from movie m,role r,actor a
+where m.movie_id=r.movie_id
+and r.actor_id=a.actor_id
+group by m.movie_name;
