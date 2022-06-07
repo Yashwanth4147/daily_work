@@ -1,0 +1,88 @@
+--------------------------------------7/6/22------------------------------------------------
+select * from employee;
+declare
+    var_emp_id employee.emp_id%type;
+    var_emp_name employee.emp_name%type;
+begin
+    var_emp_id:='&Employee_id';
+        select emp_name into var_emp_name
+        from employee
+        where emp_id=var_emp_id;
+            dbms_output.put_line(var_emp_id||','||var_emp_name);
+end;
+-----------------------------------------------------------------------------------------
+create or replace procedure sp_emp_many_rows(var_emp_id employee.emp_id%type) as 
+var_emp_rec employee%rowtype;
+begin
+select * into var_emp_rec
+from employee
+where emp_id=var_emp_id;
+dbms_output.put_line(var_emp_rec.emp_name||','||var_emp_rec.dept_id||','||var_emp_rec.ctc||','||var_emp_rec.gender);
+exception
+when too_many_rows then
+dbms_output.put_line('more rows are selected');
+end;
+
+exec sp_emp_many_rows('100')
+
+--------------------------------------------------------------------------------------------
+create or replace procedure sp_many_rows(p_cust_city in varchar2) as 
+v_rec customer%rowtype;
+begin
+select * into v_rec
+from customer
+where cust_city=p_cust_city;
+dbms_output.put_line(v_rec.cust_name||','||v_rec.cust_phone||','||v_rec.cust_city);
+exception
+when too_many_rows then
+dbms_output.put_line('more rows are selected');
+end;
+
+exec sp_many_rows('rajastan')
+select * from customer;
+desc customer;
+set serveroutput on
+--------------------------------------------------------------------------------------------------
+select * from shop_dimension;
+desc shop_dimension;
+
+create or replace procedure sp_shop_dim (var_shop_id shop_dimension.shop_id%type)as
+    var_shop_rec shop_dimension%rowtype;
+    var_count number(5);
+begin
+    select * into var_shop_rec
+    from shop_dimension
+    where shop_id=var_shop_id;
+        
+        if var_count=0 then
+        insert into shop_dimension values(var_shop_id,'unknown','unknown','unknown','N','N',0,0,'unknown','unknown','null','null');
+        commit;
+        else
+        dbms_output.put_line('the entered data already excist');
+        end if;
+end;
+        
+--------------------------------------------------------------------------------
+select * from employee;
+desc employee;
+/
+create or replace function fn_emp_age (f_emp in number) return varchar as
+    var_group varchar(30);
+    var_name varchar(30);
+begin
+    select(case when round(months_between(sysdate,date_of_birth)/12) between 20 and 35 then 'Junior' 
+                when round(months_between(sysdate,date_of_birth)/12) between 35 and 50 then 'Mid level'
+                when round(months_between(sysdate,date_of_birth)/12) > 50 then 'Senior'
+                when round(months_between(sysdate,date_of_birth)/12) < 20 then 'unknown' end ) into var_group 
+    from employee
+    where emp_id=f_emp;
+    return var_group;
+exception
+    when no_data_found then
+    return 'invalid emp number';
+end;
+/
+select fn_emp_age(102) from dual;
+set serveroutput on;
+select * from Employee;
+select trunc(months_between(sysdate,date_of_birth)/12) from employee;
