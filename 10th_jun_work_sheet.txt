@@ -1,0 +1,154 @@
+1) Display the team_name, owner_name for all the teams
+select team_nm,owner_name
+from team t,team_owner tw
+where t.team_id=tw.team_id;
+
+2)Display the teams which are operational from the year 2020 and belongs to game of cricket
+select team_nm
+from team
+where to_char(operational_from,'yy')=to_char(sysdate,'yy')-2
+and game = 'cricket'
+
+3)Display the team and the number of owners
+select team_nm,count(own_id)
+from team t,team_owner tw
+where t.team_id=tw.team_id
+group by team_nm;
+
+4)Display the oldest team in football game
+select team_nm
+from team
+where operational_from = (select max(operational_from)
+				  from team
+				  where game = 'football');
+
+5)Display the team which has more than 2 owners associated
+select team_nm
+from team t, team_owner tw
+where t.team_id=tw.team_id
+group by team_nm
+having count(own_id)>2;
+
+6)What is the relationship between Teams and Match table
+one- to- many
+
+7)What is unique about the releationship between team and match table
+game
+
+8)Display match_id, match_date, sta_name, sta_capacity, home_team_name.
+select match_id,match_date,sta_name, sta_capacity, team_nm as home_team_name
+from match m,team t,stadium s
+where m.sta_id=s.sta_id
+and m.home_team_id=t.team_id;
+
+9)Display the matches which are being played in Bangalore by BULLS team
+select match_id
+from match m,team t,stadium s
+where m.sta_id=s.sta_id
+and m.home_team_id=t.team_id
+and sta_city = 'bangalore'
+and team_nm = 'bulls';
+
+10)Display Match_id, match_date, home_team_name, opponent_team_name for all the matches.
+select Match_id, match_date,team_nm as home_team_name,team_opp_nm as opponent_team_name
+from match m,team t,team t1
+where m.home_team_id=t.team_id
+and m.visiting_team_id=t1.team_id;
+
+
+----------------------------------------------------------------------------------------------------------------
+prg for single table
+--------------------
+/
+create or replace procedure sp_instore_pro as
+cursor get_data is select * from instore_cust1;
+
+begin
+    for i in get_data loop
+        if i.store_name is null then
+                insert into cust_error_tab1 values(seq_id.nextval,i.cust_name,i.city , null);
+        elsif i.city is null then
+                insert into cust_error_tab1 values(seq_id.nextval,i.cust_name,null , i.store_name);
+        else
+            insert into cust_target1 values(seq_id_tgt.nextval,i.cust_name,i.city , i.store_name);
+        end if;
+    end loop;
+end;
+/
+
+exec sp_instore_pro;
+set serveroutput on
+----------------------------------------------------------------------------------------------------------------------------------------
+prg for two tables
+------------------
+/
+create or replace procedure sp_instore_proweb as
+    cursor curs_datas is select cust_id,cust_name,city,store_name from instore_cust1;
+    cursor curs_webs is select cust_id,cust_name,cust_city,cust_email,status from web_cust1;
+    v_cnt number(10);
+    v_count number(10);
+begin
+    for i in curs_datas loop
+        select count(*) into v_cnt
+        from cust_target1
+        where cust_name=i.cust_name;
+            if v_cnt=0 then
+                if i.city is null or i.store_name is null then
+                    insert into cust_error_tab1 values(seq_id.nextval,i.cust_name,i.city,i.store_name);
+                else 
+                    insert into cust_target1 values(seq_id_tgt.nextval,i.cust_name,i.city,i.store_name);
+                end if;
+            end if;
+    end loop;
+    for j in curs_webs  loop
+        select count(*) into v_count
+        from cust_target1
+        where cust_name=j.cust_name
+        and city=j.cust_city;
+            if v_count=0 then
+                if j.cust_email is null or j.status ='BOUNCED' then
+                    insert into cust_error_tab1(cust_e_id,cust_name,city,store_name) values(seq_id.nextval,j.cust_name,j.cust_city,null);
+                    else
+                    insert into cust_target1(cust_s_id,cust_name,city,store_name) values(seq_id_tgt.nextval,j.cust_name,j.cust_city,null);
+                end if;
+            end if;
+    end loop;
+end;
+/        
+exec sp_instore_proweb;
+
+
+SELECT * FROM cust_error_tab1;
+SELECT * FROM cust_target1;
+SELECT * FROM instore_cust1;
+SELECT * FROM web_cust1;
+
+truncate table cust_error_tab1;
+truncate table cust_target1;
+----------------------------------------------------------------------------------
+--not working
+/
+create or replace procedure sp_cust_inst as
+    cursor cur_cust_rep is 
+    select * from instore_cust1;
+    var_dec cur_cust_rep%rowtype;
+    var_count number;
+begin
+    open cur_cust_rep;
+    loop
+    fetch cur_cust_rep into var_dec;
+    exit when cur_cust_rep%notfound;
+    select count(*) into var_count
+    from instore_cust1
+    where store_name is null;
+        if var_count=0 then
+        insert into cust_target1 values(seq_targ.nextval,var_dec.cust_name,var_dec.city,var_dec.store_name);
+         else
+        insert into cust_error_tab1 values(seq_error.nextval,var_dec.cust_name,var_dec.city,var_dec.store_name);            
+        end if;
+    end loop;
+    close cur_cust_rep;
+end;
+/
+exec sp_cust_inst;
+set serveroutput on
