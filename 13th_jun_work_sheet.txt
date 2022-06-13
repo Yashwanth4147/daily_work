@@ -1,0 +1,153 @@
+TRIGGERS CONCEPT
+=================
+create table project1
+(project_id number(5) primary key,
+start_date date,
+end_date date,
+no_of_emp number(10),
+budget number(10),
+crt_date date,
+crt_by varchar(50),
+updt_date date,
+updt_by varchar(50));
+
+
+
+insert into project1 values(101,'12-apr-22','22-apr-23',30,400000,'','','','');
+insert into project1 values(102,'16-dec-12','01-jul-14',50,500000,'','','','');
+insert into project1 values(103,'19-apr-12','19-apr-13',80,200000,'','','','');
+insert into project1 values(104,'22-apr-15','28-oct-18',30,400000,'','','','');
+insert into project1 values(105,'28-apr-23','07-mar-25',80,500000,'','','','');
+commit;
+
+create table project_histry1
+(project_hist_id number(5) primary key,
+project_id number(5) references project1(project_id),
+start_date date,
+end_date date,
+no_of_emp number(10),
+budget number(10), 
+del_flag varchar(10),
+crt_date date,
+crt_by varchar(50));
+insert into project_histry1 values(21,101,'07-jan-2021','19-apr-2022',99,100000,'','','');
+
+
+/
+create or replace trigger tr_upd_del_project
+before update or delete
+on project1
+for each row
+begin
+	if updating then 
+		insert into project_histry1
+		values (proj_seq.nextval, :old.project_id, :old.start_date,
+			:old.end_date,:old.no_of_emp, :old.budget,'N',
+			sysdate, user);
+	else 
+		insert into project_histry1
+		values (proj_seq.nextval, :old.project_id, :old.start_date,
+			:old.end_date,:old.no_of_emp, :old.budget,'Y',
+			sysdate, user);
+    end if;
+end;
+/
+create sequence proj_seq;
+select * from user_triggers
+where trigger_name = upper('tr_upd_del_project');
+
+update project_histry1 set crt_by=user where project_id=101;
+
+select * from project_histry1;
+select * from project1;
+set serveroutput on
+-------------------------------------------------------------------------------------------
+IDENTIFYING DUPLICATE AND STORING DUPLICATE RECORDS
+====================================================
+
+
+
+METHOD 1
+---------Create table customer_tab1
+(cust_name varchar2(20),
+Cust_phone number(10),
+Cust_city varchar2(20),
+Cust_since date);
+
+insert into customer_tab1 values('tim',257651,'bangalore','12-apr-1992');
+insert into customer_tab1 values('bheam',124641,'chennai','14-sep-1995');
+insert into customer_tab1 values('bala',457674,'bangalore','16-jan-2000');
+insert into customer_tab1 values('charan',72464,'mumbai','19-jun-1995');
+insert into customer_tab1 values('raju',83474,'andhr apradesh','22-dec-1994');
+insert into customer_tab1 values('ramu',523453,'chennai','25-may-2002');
+insert into customer_tab1 values('siddesh',723434,'chennai','01-nov-1997');
+insert into customer_tab1 values('tim',257651,'bangalore','12-apr-1992');
+insert into customer_tab1 values('bala',457674,'bangalore','16-jan-2000');
+insert into customer_tab1 values('raju',83474,'andhr apradesh','22-dec-1994');
+insert into customer_tab1 values('ramu',523453,'chennai','25-may-2002');
+commit;
+
+Create table cust_unique1
+(cust_name varchar2(20),
+Cust_phone number(10),
+Cust_city varchar2(20),
+Cust_since date);
+
+Create table cust_dup1
+(cust_name varchar2(20),
+Cust_phone number(10),
+Cust_city varchar2(20),
+Cust_since date);
+
+create or replace procedure sp_cust_dup_unique1 as
+cursor cust_unique_record is (select distinct(cust_name),cust_phone,cust_city,cust_since 
+                                from customer_tab1
+                                group by cust_name,cust_phone,cust_city,cust_since);
+
+cursor cust_duplicate_record is (select cust_name,cust_phone,cust_city,cust_since,count(*) as count_rect 
+                                from customer_tab1
+                                group by cust_name,cust_phone,cust_city,cust_since
+                                having count(*)>1);
+begin
+    for i in cust_unique_record loop
+        insert into cust_unique1 values(i.cust_name,i.cust_phone,i.cust_city,i.cust_since);
+    end loop;
+        for j in cust_duplicate_record loop
+            insert into cust_dup1 values(j.cust_name,j.cust_phone,j.cust_city,j.cust_since);
+        end loop;
+        commit;
+exception
+    when others then
+    dbms_output.put_line(SQLCODE||','||sqlerrm);
+end;
+/    
+set serveroutput on
+exec sp_cust_dup_unique1;
+/
+---------------------------------------------------------------------
+METHOD-2
+========
+/
+create or replace procedure sp_cust_dup_unique as
+cursor cust_unique_record is (select cust_name,cust_phone,cust_city,cust_since 
+                                from customer_tab1
+                                where rowid in (select max(rowid)from customer_tab1
+                                group by cust_name,cust_phone,cust_city,cust_since));
+
+cursor cust_duplicate_record is (select cust_name,cust_phone,cust_city,cust_since,count(*) as count_rect 
+                                from customer_tab1
+                                group by cust_name,cust_phone,cust_city,cust_since
+                                having count(*)>1);
+begin
+    for i in cust_unique_record loop
+        insert into cust_unique1 values(i.cust_name,i.cust_phone,i.cust_city,i.cust_since);
+    end loop;
+        for j in cust_duplicate_record loop
+            insert into cust_dup1 values(j.cust_name,j.cust_phone,j.cust_city,j.cust_since);
+        end loop;
+        commit;
+exception
+    when others then
+    raise_application_error(-20005,'There is unnown error contact admin');
+end;
+/
