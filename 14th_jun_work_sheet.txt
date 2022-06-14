@@ -1,0 +1,151 @@
+DECLARE
+    TYPE EMP_NO_TABLE IS TABLE OF NUMBER INDEX BY BINARY_INTEGER;
+    VAR_EMP_NO_TAB  EMP_NO_TABLE;
+BEGIN
+    SELECT EMP_ID BULK COLLECT INTO VAR_EMP_NO_TAB
+    FROM EMPLOYEE;
+    FOR I IN 1..VAR_EMP_NO_TAB.LAST LOOP
+       DBMS_OUTPUT.PUT_LINE(VAR_EMP_NO_TAB(I));
+    END LOOP;
+END;
+-----------------------------------------------------------------------------
+/
+DECLARE
+    TYPE EMP_NO_TABLE IS TABLE OF NUMBER INDEX BY BINARY_INTEGER;
+    type emp_job_id_table is table of number index by binary_integer;
+    VAR_EMP_NO_TAB  EMP_NO_TABLE;
+    var_emp_job_id_tab emp_no_table;
+BEGIN
+    SELECT EMP_ID,job_id BULK COLLECT INTO VAR_EMP_NO_TAB,var_emp_job_id_tab
+    FROM EMPLOYEE;
+        dbms_output.put_line('The number of employee are : '||var_emp_no_tab.last);
+        dbms_output.put_line('The number of job_id are: '||var_emp_job_id_tab.last);
+    FOR I IN 1..VAR_EMP_NO_TAB.LAST LOOP
+       DBMS_OUTPUT.PUT_LINE(VAR_EMP_NO_TAB(I));
+    END LOOP;
+    for j in 1..var_emp_job_id_tab.last loop
+        DBMS_OUTPUT.PUT_LINE(VAR_EMP_job_id_TAB(j));
+    end loop;
+END;
+/
+set serveroutput on
+select * from employee;
+---------------------------------------------------------------------------
+/
+create or replace trigger tr_upd_del_project
+before insert or update or delete
+on project1
+for each row
+begin
+	if inserting or updating or deleting then 
+		insert into project_histry1
+		values (proj_seq.nextval, :old.project_id, :old.start_date,
+			:old.end_date,:old.no_of_emp, :old.budget,'Y',
+			sysdate, user);
+	else 
+		insert into project_histry1
+		values (proj_seq.nextval, :old.project_id, :old.start_date,
+			:old.end_date,:old.no_of_emp, :old.budget,'N',
+			sysdate, user);
+            commit;
+    end if;
+end;
+/
+
+update project1 set budget=100000 where project_id=104;
+delete from project_histry1
+where project_hist_id=21;
+insert into project1 values(107,'16-mar-2021','21-jul-2022',55,100000,sysdate,user,sysdate,user);
+select * from project_histry1;
+select * from project1;
+
+-------------------------------------------------------------------
+create or replace trigger tr_upd_del_project1
+before insert or update or delete
+on project1
+for each row
+begin
+	if inserting or updating or deleting then 
+		insert into project_histry1
+		values (proj_seq.nextval, :new.project_id, :new.start_date,
+			:new.end_date,:new.no_of_emp, :new.budget,'Y',
+			sysdate, user);
+	else 
+		insert into project_histry1
+		values (proj_seq.nextval, :new.project_id, :new.start_date,
+			:new.end_date,:new.no_of_emp, :new.budget,'N',
+			sysdate, user);
+    end if;
+end;
+/
+set serveroutput on
+insert into project1 values(109,'16-mar-2021','21-jul-2022',60,100000,sysdate,user,sysdate,user);
+select * from project_histry1;
+select * from project1;
+update project1 set no_of_emp=60 where project_id=106;
+------------------------------------------------------------------------------------
+SQL test querys
+-----------------
+1)Find all the student name, course name whose data of join is last year and belongs to Chennai or Bangalore city
+
+select s_name,c_name
+from student s,course c
+where s.course_id=c.course_id
+and s.city='bangalore' or s.city='chennai'
+and (to_char(s_doj,yy)=to_char(sysdate,yy)-1);
+
+2)Find the common subjects between ECE and CSE Courses
+
+select sub_name
+from subject
+where sub_name='ECE'
+intersect
+select sub_name
+from subject
+where sub_name='CSE';
+
+3)Find all the courses where we have more than 2 students from Chennai
+
+select c_name,course_id
+from student s,course c
+where s.course_id=c.course_id
+and s_city='chennai'
+group by c_name,course_id
+having count(s_d)>2;
+
+4)Find all the students who paid the fee after due date for the schedule_id 25
+select s_name
+from student s,fee_scheduled fs,fee_payment fp
+where s.course_id=fs.c_id
+and fs.c_id=fp.c_id
+and scheduled_id=25
+and pay_before<fee_pai_date;
+
+5)want to display the course_name, year_wise, fees collection
+ select c_name ,to_char(year_of_payment,yy)=to(sysdate,yy),sum(amount)
+from student s,fee_scheduled fs,fee_payment fp
+where s.course_id=fs.c_id
+and fs.c_id=fp.c_id
+group by c_name ,to_char(year_of_payment,yy)=to(sysdate,yy);
+
+6)Find the student_name, course_name, subject_name and subject type for 
+all the students who are taking ECE course who are from Chennai and who
+ joined in the year of 2019
+
+7)Find the student who are from the same city as student RAVI
+select s_name
+from student
+where s_city = (select s_city
+			from student
+			where s_name = 'RAVI');
+
+8)Display the sub_name, sub_type and no of hours. Consider only the max number of hours in respective sub type
+
+select sub_name,sub_type,max(no_of_hours)
+from subject
+group by sub_name,sub_type;
+
+select *
+from (select sub_name,sub_type,no_of_hours,dense_rank() over(partition by max(no_of_hours) order by sub_type desc)r
+from subject)
+where r<=2;
