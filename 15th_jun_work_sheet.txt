@@ -1,0 +1,152 @@
+1) Find the team names to which player Kohli played.
+select team_nm
+from team t,team_plaer tp,player p
+where t.team_id = tp.team_id
+and tp.player_id = p.player_id
+and player_nm = 'kohli';
+
+2) Display the current team to which Marian is playing for.
+select team_nm
+from team t,team_plaer tp,player p
+where t.team_id = tp.team_id
+and tp.player_id = p.player_id
+and player_nm = 'Marian';
+
+3) Find the number of players we have who is older than player Surendra
+select count(player_id)
+from player
+where player_dob < (select player_dob
+				from player
+				where player_nm = 'Surendra');
+
+4) Display team name and total contract value of players for that team.
+select team_nm,sum(contract_value)
+from team t,team_plaer tp
+where t.team_id = tp.team_id
+group by team_nm;
+
+5) Display the team_name, player_name, start_date, end_date and the contract value
+select team_name, player_name, start_date, end_date,contract_value
+from team t,team_plaer tp,player p
+where t.team_id = tp.team_id
+and tp.player_id = p.player_id;
+
+6) Display all the players who were born in the month of April
+select player_nm
+from player
+where to_char(player_dob,'mon') = 'APR';
+
+7) Display all the players whose age is greater than 25 and who are either Grade B or Grade C Players
+select player_nm
+from player p,team_plaer tp
+where p.player_id = tp.player_id
+and round(months_between(sysdate,player_dob)/12)>25
+and (grade='B' or grade='C');
+
+8) Display the player_name, team_name and team's manager name for all the cricket players
+select team_name, player_name, manager
+from team t,team_plaer tp,player p
+where t.team_id = tp.team_id
+and tp.player_id = p.player_id
+and game = 'cricket';
+
+9) Display the stadium_name, match_date, home_team_name, player_name (consider only home team players)
+10) Create view which gives the players and their current association team.
+ If the sysdate is between the start_Date and end_date that means they are working for that team.
+------------------------------------------------------------------------------------------------------------------
+plsql
+------
+CREATE TABLE DEPT_trg
+(DEPT_ID NUMBER(4) PRIMARY KEY,
+ DEPT_NAME VARCHAR2(20));
+ 
+ 
+ CREATE TABLE BUDGET_trg
+(BUD_ID NUMBER(4) PRIMARY KEY,
+ DEPT_ID REFERENCES DEPT_trg(DEPT_ID),
+ BUD_YEAR DATE,
+ BUD_AMT NUMBER(30),
+ REM_AMT NUMBER(30),
+ CRT_DT DATE,
+ CRT_BY VARCHAR2(20));
+ 
+ CREATE TABLE ACC_PAYABLE_trg
+(PAY_ID NUMBER(4) PRIMARY KEY,
+ PAY_DATE DATE,
+ DEPT_ID REFERENCES DEPT_trg(DEPT_ID),
+ EMP_ID NUMBER(5),
+ SUPP_ID VARCHAR2(20),
+ INVOICE_ID VARCHAR2(20),
+ AMOUNT_PAID NUMBER(10));
+
+insert into dept_trg values(111,'HR');
+insert into dept_trg values(112,'OPERATIONS');
+insert into dept_trg values(113,'MARKETING');
+insert into dept_trg values(114,'SALES');
+insert into dept_trg values(115,'FINANCE');
+
+insert into BUDGET_trg values(201,114,'19-apr-21',200000,100000,'','');
+insert into BUDGET_trg values(202,115,'21-jan-21',400000,100000,'','');
+insert into BUDGET_trg values(203,111,'24-sep-22',500000,200000,'','');
+insert into BUDGET_trg values(204,114,'1-dec-21',300000,150000,'','');
+insert into BUDGET_trg values(205,112,'02-mar-22',600000,400000,'','');
+insert into BUDGET_trg values(206,114,'24-apr-22',100000,50000,'','');
+insert into BUDGET_trg values(207,113,'16-oct-21',50000,10000,'','');
+
+insert into ACC_PAYABLE_trg values(351,'20-apr-21',114,711,'S11','INV1',100000);
+insert into ACC_PAYABLE_trg values(352,'26-may-21',111,712,'S12','INV2',200000);
+insert into ACC_PAYABLE_trg values(353,'16-jan-22',113,713,'S13','INV3',500000);
+insert into ACC_PAYABLE_trg values(354,'14-oct-21',114,714,'S14','INV4',400000);
+insert into ACC_PAYABLE_trg values(355,'24-dec-22',115,715,'S15','INV5',100000);
+commit;
+
+
+create or replace trigger tr_budget_acc
+    before insert or update
+    on ACC_PAYABLE_trg
+    for each row
+declare 
+    var_rem_amt BUDGET_trg.rem_amt%type;
+    var_budget exception;
+    num_count number(5);
+begin
+    select rem_amt into var_rem_amt
+    from BUDGET_trg
+    where dept_id = :new.dept_id;
+        if var_rem_amt<0 then
+        raise var_budget;
+            elsif inserting then
+                :new.crt_dt := sysdate;
+                :new.crt_by := user;
+                update BUDGET_trg set rem_amt = bud_amt -:new.amount_paid
+                where  dept_id=:new.dept_id;
+                    num_count := sql%rowcount;
+                    dbms_output.put_line(num_count);
+        end if;
+exception
+    WHEN var_budget then
+    dbms_output.put_line('no enought money for transaction');
+end;
+/
+
+set serveroutput on
+----------------------------------------------------------------------------------------
+/
+create or replace trigger tr_upd_del_project1
+before insert or update or delete
+on project1
+for each row
+begin
+	if inserting or updating or deleting then 
+		insert into project_histry1
+		values (proj_seq.nextval, :new.project_id, :new.start_date,
+			:new.end_date,:new.no_of_emp, :new.budget,'Y',
+			sysdate, user);
+	else 
+		insert into project_histry1
+		values (proj_seq.nextval, :new.project_id, :new.start_date,
+			:new.end_date,:new.no_of_emp, :new.budget,'N',
+			sysdate, user);
+    end if;
+end;
+/
