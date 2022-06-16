@@ -1,0 +1,128 @@
+Create table source_data
+(st_id number(5),
+St_name varchar2(20),
+Marks number(5));
+
+insert into source_data values(100,'ram',45);
+insert into source_data values(101,'ramu',45);
+insert into source_data values(102,'tim',85);
+insert into source_data values(103,'bala',95);
+insert into source_data values(104,'balu',55);
+insert into source_data values(104,'balu',55);
+
+
+Create table target_data
+(st_id number(5),
+St_name varchar2(20),
+Marks number(5),
+Top_marks number(5),
+Least_marks number(5),
+Varience_from_lowest number(5),
+Varience_from_highest number(5));
+
+--If you run the program again, you should ignore the records which are already exists in the target.
+--Write a stored procedure to populate the target tables.
+
+/
+create or replace procedure sp_varience_pop as
+    cursor cs_pop_data is (select st_id,st_name,marks
+                        from source_data);
+    var_count number(5);
+begin
+    for i in cs_pop_data loop
+        select count(*) into var_count
+        from target_data 
+        where st_id=i.st_id 
+        and st_name=i.st_name;
+            if var_count=0 then
+                insert into target_data values(i.st_id,i.st_name,i.marks,(select max(marks) from source_data),
+                                              (select min(marks) from source_data),(select min(marks)-i.marks from source_data),
+                                              (select max(marks)-i.marks from source_data));
+                commit;
+                dbms_output.put_line('DATA LOADED SUCCESFULLY');
+            else
+                dbms_output.put_line('DATA ALREADY EXCIST');
+            end if;
+    end loop;
+exception
+    when others then
+        dbms_output.put_line('please contact admin services');
+end;
+/
+
+exec sp_varience_pop;
+SET SERVEROUTPUT ON;
+
+select * from target_data;
+select * from source_data;
+
+TRUNCATE TABLE target_data;
+
+delete from source_data 
+where rowid  in (select max(rowid) from source_data);
+---------------------------------------------------------------------------------
+select count(*) from user_tab_columns where table_name='SOURCE_DATA';
+select table_name from user_tables;
+
+create or replace function fn_tab_column(var_tab_name in varchar) 
+return number as var_grp_count number(5);
+
+    begin
+    for i in cu_tab_data loop
+        if i in var_tab_name then
+            select count(*) into var_grp_count
+            from user_tab_columns
+            where table_name like i;
+            
+            RETURN var_grp_count;
+   
+        else 
+            RETURN -1;
+        end if;
+    end loop;
+end;
+/
+-------------------------------------------------------------------------------
+declare
+var_tab_name varchar := '&tableName';
+var_grp_count int ;
+cursor cu_tab_data is (select table_name 
+                         from user_tables);
+    begin
+    for i in cu_tab_data loop
+        if i in var_tab_name then
+            select count(*) into var_grp_count
+            from user_tab_columns
+            where table_name = i.var_tab_name;
+            dbms_output.put_line(var_grp_count);
+            
+--            RETURN var_grp_count;
+   
+        else 
+        dbms_output.put_line('-1');
+           -- RETURN -1;
+        end if;
+    end loop;
+end;
+/
+------------------------------------------------------------------------------
+declare 
+v_cnt int := 0;
+tab_nm varchar(30) := 'SOURCE_DATA';
+col_num number(4);
+begin
+    select count(*) into v_cnt
+    from user_tables;
+    if v_cnt > 1 then
+        select count(*) into col_num
+        from user_tab_columns
+        where table_name = tab_nm;
+        dbms_output.put_line(col_num);
+    else
+        dbms_output.put_line('No');
+    end if;
+end;
+/
+SET SERVEROUTPUT ON;
+
+SELECT * FROM SOURCE_DATA;
