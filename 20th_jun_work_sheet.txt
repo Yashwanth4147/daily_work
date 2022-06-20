@@ -1,0 +1,123 @@
+Create table source_data
+(st_id number(5),
+St_name varchar2(20),
+Marks number(5));
+
+insert into source_data values(100,'ram',45);
+insert into source_data values(101,'ramu',45);
+insert into source_data values(102,'tim',85);
+insert into source_data values(103,'bala',95);
+insert into source_data values(104,'balu',55);
+insert into source_data values(104,'balu',55);
+commit;
+
+Create table target_data
+(st_id number(5),
+St_name varchar2(20),
+Marks number(5),
+Top_marks number(5),
+Least_marks number(5),
+Varience_from_lowest number(5),
+Varience_from_highest number(5));
+
+--If you run the program again, you should ignore the records which are already exists in the target.
+--Write a stored procedure to populate the target tables.
+
+/
+create or replace procedure sp_varience_pop as
+    cursor cs_pop_data is (select st_id,st_name,marks
+                        from source_data);
+    var_count number(5);
+begin
+    for i in cs_pop_data loop
+        select count(*) into var_count
+        from target_data 
+        where st_id=i.st_id 
+        and st_name=i.st_name;
+            if var_count=0 then
+                insert into target_data values(i.st_id,i.st_name,i.marks,(select max(marks) from source_data),
+                                              (select min(marks) from source_data),(select min(marks)-i.marks from source_data),
+                                              (select max(marks)-i.marks from source_data));
+            else
+                dbms_output.put_line('DATA ALREADY EXCIST');
+            end if;
+    end loop;
+        
+exception
+    when others then
+        dbms_output.put_line('please contact admin services');
+end;
+/
+
+exec sp_varience_pop;
+SET SERVEROUTPUT ON;
+
+select * from target_data;
+select * from source_data;
+---------------------------------------------------------------------------------------------------------------------------------------------
+/
+declare 
+v_cnt int;
+tab_nm varchar(30) := 'EMPLOYEE';
+col_num number(4);
+begin
+    select count(*) into v_cnt
+    from user_tables;
+    if v_cnt > 1 then
+        select count(*) into col_num
+        from user_tab_columns
+        where table_name = tab_nm;
+        dbms_output.put_line(col_num);
+    else
+        dbms_output.put_line('NO TABLE EXCIST');
+    end if;
+end;
+/
+SET SERVEROUTPUT ON;
+
+SELECT * FROM TAB;
+--------------------------------------------------------------------------------------------
+/
+create or replace function fn_tab_name (f_tab_nm  varchar2) return number as
+    var_count number(5);
+    var_count_tab number(5);
+begin
+    select count(*) into var_count
+    from user_tables
+    where table_name = f_tab_nm;
+        if var_count > 0 then
+            select count(*) into var_count_tab
+            from user_tab_columns
+            where table_name = f_tab_nm;
+            return var_count_tab;
+        else
+            return -1;
+        end if;
+exception
+    when others then
+    dbms_output.put_line(sqlcode||','||sqlerrm);
+end;
+/
+select * from user_tables;
+select * from user_tab_columns;
+select * from user_rows;
+select * from tab;
+
+select fn_tab_name('EMP1234') from dual;
+
+
+---------------------------------------------------------------------------------------------
+create or replace function fn_column_count(user_table varchar2) return number as
+v_count number(10);
+begin 
+select count(*) into v_count
+from user_tab_columns
+where table_name=upper(user_table);
+    if v_count>0 then
+       return v_count;
+    else
+       return -1;
+    end if;
+end;
+
+select fn_column_count('EMP1234') from dual;
