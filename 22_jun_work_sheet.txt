@@ -1,0 +1,122 @@
+select sales_outlet_details
+from sales_outlet so,sales_transaction st,customers c
+where so.sales_out_id = st.sales_out_id
+and st.customer_id = c.customer_id
+group sales_outlet_details
+having count(customer_id)> select count(customer_id)
+					from sales_outlet so,sales_transaction st,customers c
+					where so.sales_out_id = st.sales_out_id
+					and st.customer_id = c.customer_id;
+
+select dept_id
+from (select dept_id,count(emp_id),dense_rank() over by count(emp_id) desc)r
+from employee
+group by dept_id) abc
+where r=1;
+
+dimension tables:-
+customers, staff, sales_outlet, products, payments
+
+fact tables:-
+ref_payment_methods, sales_transaction, products_in_transaction
+
+/
+create or replace function fn_shop_sales (var_shop_id number,var_from_dt date,var_to_dt date)return sys_refcursor  as
+        var_5_sale  sys_refcursor; 
+        var_from_week number(2);
+        var_from_year number(4);
+        var_to_week number(2);
+        var_to_year number(4);
+begin
+        var_from_week := to_char(var_from_dt,'ww');
+        var_from_year := to_Char(var_from_dt,'YYYY');
+        var_to_week := to_char(var_to_dt,'ww');
+        var_to_year := to_Char(var_to_dt,'YYYY');
+            open var_5_sale for
+                select * from 
+                (select cd.week_in_year,sum(sf.Amount_sold),dense_rank() over(order by sum(Amount_Sold) desc)r
+                from shop_facts sf,shop_dimension sd,efashion.calender_dimension cd
+                where sf.shop_id = sd.shop_id
+                and sf.week_id = cd.week_id
+                and sd.shop_id = var_shop_id
+                and cd.week_id between var_from_week and var_to_week
+                and cd.week_in_year between var_from_year and var_to_year
+                group by cd.week_in_year) week_sales
+                where r < 6;
+                   return var_5_sale;
+end;
+/
+
+
+-------------------------------------------------------------------------------------    
+select * from shop_dimension;
+select * from shop_facts;
+select * from calender_dimension;
+
+desc shop_dimension;
+desc shop_facts;
+desc calender_dimension;
+
+                select * from 
+                (select sf.shop_id,sum(sf.amount_sold),dense_rank() over(order by sum(Amount_Sold) desc)r
+                from shop_facts sf,shop_dimension sd,calender_dimension cd
+                where sf.shop_id = sd.shop_id
+                and sf.week_id = cd.week_id
+                group by sf.shop_id)abc
+                where r<6;
+----------------------------------------------------------------------------------------------
+                 select * from 
+                (select cd.week_in_year,sum(sf.Amount_sold),dense_rank() over(order by sum(Amount_Sold) desc)r
+                from shop_facts sf,shop_dimension sd,calender_dimension cd
+                where sf.shop_id = sd.shop_id
+                and sf.week_id = cd.week_id
+                group by cd.week_in_year) week_sales
+                where r < 6;
+-------------------------------------------------------------------------------
+/
+select to_char(sysdate,'w-mm-yyyy') from dual;
+select trunc(sysdate,'w') from dual;
+select to_char(trunc(sysdate,'w'),'dd-mm-yy') from dual;
+select to_char(trunc(sysdate,'w'),'dd-mm-yy') from dual;
+
+select to_char(last_date(sysdate),'dd-mm-yy')from dual;
+select to_char(last_day(sysdate,'mm'),'dd-mm-yy') from dual;
+
+select to_char(to_date(sysdate,'w-mm-yyyy'),'dd-mm-yyyy') from dual;
+/
+----------------------------------------------------------------------------------------------
+create table yash_calender_dimension as (select * from calender_dimension);
+create table yash_shop_dimension as (select * from shop_dimension);
+create table yash_shop_facts as (select * from shop_facts);
+
+select * from yash_shop_dimension;
+select * from yash_shop_facts;
+select * from yash_calender_dimension;
+/
+create or replace function fn_shop_sales (var_shop_id number,var_from_dt date,var_to_dt date)return sys_refcursor  as
+        var_5_sale  sys_refcursor; 
+        var_from_week number(2);
+        var_from_year number(4);
+        var_to_week number(2);
+        var_to_year number(4);
+begin
+        var_from_week := to_char(var_from_dt,'ww');
+        var_from_year := to_Char(var_from_dt,'YYYY');
+        var_to_week := to_char(var_to_dt,'ww');
+        var_to_year := to_Char(var_to_dt,'YYYY');
+            open var_5_sale for
+                select * from 
+                (select cd.week_in_year,sum(sf.Amount_sold),dense_rank() over(order by sum(Amount_Sold) desc)r
+                from yash_shop_facts sf,yash_shop_dimension sd,yash_calender_dimension cd
+                where sf.shop_id = sd.shop_id
+                and sf.week_id = cd.week_id
+                and sf.shop_id = var_shop_id
+                and cd.week_id between var_from_week and var_to_week
+                and cd.week_in_year between var_from_year and var_to_year
+                group by cd.week_in_year) week_sales
+                where r < 6;
+                   return var_5_sale;
+end;
+/
+set serveroutput on
+select fn_shop_sales(100,'15-aug-18','15-sep-18') from dual;
