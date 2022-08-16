@@ -1,0 +1,575 @@
+MINI PROJECT CODE:-
+---------------------
+
+create table y_country
+(country_id number(5) primary key,
+country_name varchar2(50),
+crt_by varchar2(50),
+crt_date date);
+insert into y_country values(1001,'India',user,sysdate);
+insert into y_country values(1002,'Srilinka',user,sysdate);
+insert into y_country values(1003,'Usa',user,sysdate);
+insert into y_country values(1004,'Canada',user,sysdate);
+
+
+create table y_state
+(state_id number(5) primary key,
+state_name varchar2(50),
+country_id number(5) references y_country(country_id),
+crt_by varchar2(50),
+crt_date date);
+insert into y_state values(101,'Karnataka',1001,user,sysdate);
+insert into y_state values(102,'new yourk',1003,user,sysdate);
+insert into y_state values(103,'vancover',1004,user,sysdate);
+insert into y_state values(104,'coloumbia',1002,user,sysdate);
+insert into y_state values(105,'andhra',1001,user,sysdate);
+insert into y_state values(106,'texas',1003,user,sysdate);
+
+
+create table y_city
+(city_id number(5) primary key,
+city_name varchar2(50),
+state_id number(5) references y_state(state_id),
+crt_by varchar2(50),
+crt_date date);
+insert into y_city values(10,'bangalore',101,user,sysdate);
+insert into y_city values(11,'moratuwa',104,user,sysdate);
+insert into y_city values(12,'yonkers',102,user,sysdate);
+insert into y_city values(13,'houston',106,user,sysdate);
+insert into y_city values(14,'guntur',105,user,sysdate);
+
+
+create table y_customers
+(customer_id number(5) primary key,
+customer_name varchar2(30),
+customer_phone number(10),
+customer_email varchar2(50),
+city_id number(5) references y_city(city_id),
+crt_by varchar2(50),
+crt_date date);
+insert into y_customers values(201,'tim',9900584231,'tim1@gmail.com',13,user,sysdate);
+insert into y_customers values(202,'balu',9900584241,'balu@gmail.com',10,user,sysdate);
+insert into y_customers values(203,'raju',9900584251,'raju41@gmail.com',14,user,sysdate);
+insert into y_customers values(204,'kumar',9900584261,'kumar9@gmail.com',12,user,sysdate);
+insert into y_customers values(205,'singh',9900584271,'singh77@gmail.com',11,user,sysdate);
+
+alter table y_customers add customer_address varchar2(50);
+update y_customers
+set customer_address='kr main road'
+where customer_id=205;
+
+create table y_employee
+(emp_id number(5) primary key,
+emp_name varchar2(30),
+emp_phone number(10),
+emp_email varchar2(50),
+emp_job varchar2(50),
+emp_mgr number(10),
+emp_ctc number(10),
+city_id number(5) references y_city(city_id),
+crt_by varchar2(50),
+crt_dt date);
+insert into y_employee values(401,'venkat',9513463241,'venki1@gmail.com','clerk',7902,20000,10,user,sysdate);
+insert into y_employee values(402,'hari',9513463242,'hari12@gmail.com','manager',7903,35000,14,user,sysdate);
+insert into y_employee values(403,'vamsi',9513463243,'vamsiking@gmail.com','analist',7904,25000,12,user,sysdate);
+insert into y_employee values(404,'siva',9513463244,'siva99@gmail.com','clerk',7902,20000,10,user,sysdate);
+insert into y_employee values(405,'sanjay',9513463245,'sanju007@gmail.com','hr',7905,40000,13,user,sysdate);
+insert into y_employee values(406,'satish',9513463246,'satish111@gmail.com','analist',7904,25000,14,user,sysdate);
+alter table y_employee add emp_ctc number(10);
+update y_employee
+set emp_hired='10-oct-2019'
+where emp_id=401;
+select * from y_employee;
+alter table y_employee modify emp_mgr references y_manager(emp_mgr);
+
+create table y_manager
+(emp_mgr number(5) primary key,
+emp_manager_name varchar2(50));
+insert into y_manager values(7901,'Rakesh');
+insert into y_manager values(7902,'mahesh');
+insert into y_manager values(7903,'divya');
+insert into y_manager values(7904,'sandeep');
+insert into y_manager values(7905,'ramya');
+
+create table y_shop
+(shop_id number(5) primary key,
+shop_name varchar2(30),
+address varchar2(50),
+zip_code number(10),
+city_id references y_city(city_id),
+state_id references y_state(state_id),
+open_date date,
+crt_by varchar2(50),
+crt_date date);
+insert into y_shop values(501,'zara','jayanagar',560079,13,106,'12-apr-1996',user,sysdate);
+insert into y_shop values(502,'guchi','rr nagar',560080,11,101,'07-sep-1995',user,sysdate);
+insert into y_shop values(503,'raghu','jp nagar',560072,14,104,'14-jan-1992',user,sysdate);
+insert into y_shop values(504,'jeevan','sarakki',560078,11,105,'16-may-1994',user,sysdate);
+insert into y_shop values(505,'aqquib','kormangala',560091,12,102,'22-dec-1995',user,sysdate);
+insert into y_shop values(506,'linen','silkboard',560022,10,103,'29-jul-1997',user,sysdate);
+insert into y_shop values(507,'ramraj','jp nagar',560072,13,104,'11-mar-1996',user,sysdate);
+insert into y_shop values(508,'zodiac','sarakki',560078,14,106,'26-oct-1991',user,sysdate);
+alter table y_shop add shop_owner_name varchar2(50);
+update y_shop
+set shop_owner_name='shoba'
+where shop_id=508;
+select * from y_shop;
+
+create table y_products
+(product_id number(5) primary key,
+product_name varchar2(30),
+product_family varchar2(50),
+product_wholesale_price number(10),
+product_retail_price number(10),
+crt_by varchar2(50),
+crt_date date);
+insert into y_products values(601,'hardisk','computer',25000,32000,user,sysdate);
+insert into y_products values(602,'marker','stationary',25,35,user,sysdate);
+insert into y_products values(603,'mouse','computer',500,750,user,sysdate);
+insert into y_products values(604,'whiteboard','stationary',10000,12000,user,sysdate);
+insert into y_products values(605,'headphones','computer',1000,1500,user,sysdate);
+insert into y_products values(606,'sonycharger','computer',800,950,user,sysdate);
+insert into y_products values(607,'pendrive','computer',650,800,user,sysdate);
+insert into y_products values(608,'book','stationary',100,125,user,sysdate);
+alter table y_products add prod_expire_date date;
+update y_products
+set prod_expire_date='25-sep-2018'
+where product_id=601;
+select * from y_products;
+
+create table y_prod_manifacturer
+(prod_man_id number(5) primary key,
+prod_man_name varchar2(30),
+prod_man_phone number(10),
+prod_man_email varchar2(50),
+city_id number(5) references y_city(city_id),
+crt_by varchar2(50),
+crt_date date);
+insert into y_prod_manifacturer values(701,'ram',9513463251,'ram95@gmail.com',12,user,sysdate);
+insert into y_prod_manifacturer values(702,'lakshman',9513463252,'lakhi@gmail.com',10,user,sysdate);
+insert into y_prod_manifacturer values(703,'uday',9513463253,'uday12@gmail.com',13,user,sysdate);
+insert into y_prod_manifacturer values(704,'king',9513463254,'king1@gmail.com',11,user,sysdate);
+insert into y_prod_manifacturer values(705,'deman',9513463255,'deman2@gmail.com',14,user,sysdate);
+
+
+create table sales_transaction
+(transaction_id number(5) primary key,
+customer_id number(5) references y_customers(customer_id),
+shop_id number(5) references y_shop(shop_id),
+emp_id number(5) references y_employee(emp_id),
+transaction_date date,
+transaction_wholesale_price number(10),
+transaction_retail_price number(10),
+crt_by varchar2(50),
+crt_dt date);
+insert into sales_transaction values(6001,203,502,404,'09-apr-2022',700,900,user,sysdate);
+insert into sales_transaction values(6002,201,501,402,'12-sep-2022',500,800,user,sysdate);
+insert into sales_transaction values(6003,205,507,401,'03-dec-2022',900,1000,user,sysdate);
+insert into sales_transaction values(6004,203,503,406,'15-oct-2022',200,500,user,sysdate);
+insert into sales_transaction values(6005,204,508,403,'18-jan-2022',400,500,user,sysdate);
+insert into sales_transaction values(6006,202,506,405,'21-aug-2022',1400,1500,user,sysdate);
+insert into sales_transaction values(6007,201,505,401,'27-feb-2022',300,500,user,sysdate);
+insert into sales_transaction values(6008,204,504,404,'25-mar-2022',500,800,user,sysdate);
+
+
+create table y_ref_payment_methods
+(payment_method_code number(5) primary key,
+payment_method_name varchar2(30),
+payment_method_description varchar2(30),
+crt_by varchar2(50),
+crt_date date);
+insert into y_ref_payment_methods values(801,'cash','hand cash payment',user,sysdate);
+insert into y_ref_payment_methods values(802,'upi','cash less payment',user,sysdate);
+insert into y_ref_payment_methods values(803,'card','scan card cash payment',user,sysdate);
+insert into y_ref_payment_methods values(804,'online','net banking payment',user,sysdate);
+
+
+create table y_payments
+(payment_id number(5) primary key,
+payment_method_code references y_ref_payment_methods(payment_method_code),
+transaction_id references sales_transaction(transaction_id),
+payment_amount number(10),
+crt_by varchar2(50),
+crt_date date);
+insert into y_payments values(901,802,6006,10560,user,sysdate);
+insert into y_payments values(902,803,6001,10800,user,sysdate);
+insert into y_payments values(903,804,6004,12300,user,sysdate);
+insert into y_payments values(904,801,6002,10000,user,sysdate);
+insert into y_payments values(905,803,6007,15000,user,sysdate);
+
+
+create table prod_transaction
+(product_id number(5) references y_products(product_id),
+transaction_id number(5) references sales_transaction(transaction_id),
+quantity number(10),
+crt_by varchar2(50),
+crt_date date);
+insert into prod_transaction values(601,6003,5,user,sysdate);
+insert into prod_transaction values(605,6001,6,user,sysdate);
+insert into prod_transaction values(608,6005,8,user,sysdate);
+insert into prod_transaction values(604,6007,10,user,sysdate);
+insert into prod_transaction values(602,6004,15,user,sysdate);
+
+commit;
+select * from y_country;
+select * from y_state;
+select * from y_city;
+select * from  y_customers;
+select * from y_employee;
+select * from y_shop;
+select * from y_products;
+select * from  y_prod_manifacturer;
+select * from sales_transaction;
+select * from y_ref_payment_methods;
+select * from y_payments;
+select * from prod_transaction;
+select * from y_manager;
+
+select user from dict;
+create synonym oltp_country for FEB22_YASHWANTH.Y_COUNTRY ;
+grant select,insert,delete on oltp_country to public;
+-------------------------------------dimension tables------------------------------------------------------------------------
+create table customer_dim
+(cust_sur_id number(10) primary key,
+cust_id number(5),
+cust_name varchar2(50),
+cust_phone number(10),
+cust_email varchar2(50),
+cust_address varchar2(50),
+cust_city_name varchar2(50),
+cust_state_name varchar2(50),
+cust_country_name varchar2(50),
+crt_by varchar2(50),
+crt_date date);
+
+create table shop_dim
+(shop_sur_id number(10) primary key,
+shop_id number(5),
+shop_name varchar2(50),
+shop_address varchar2(50),
+shop_owner_name varchar2(50),
+shop_open_date date,
+zip_code number(10),
+shop_city_name varchar2(50),
+shop_state_name varchar2(50),
+shop_county_name varchar2(50),
+crt_by varchar2(50),
+crt_date date);
+
+create table payment_method_dim
+(payment_method_id number(10) primary key,
+payment_method_name varchar2(50),
+payment_method_description varchar2(50),
+crt_by varchar2(50),
+crt_date date);
+alter table payment_method_dim add payment_method_code number(5) references y_ref_payment_methods(payment_method_code);
+
+create table emp_dim
+(emp_sur_id number(10) primary key,
+emp_id number(5),
+emp_name varchar2(50),
+emp_phone number(10),
+emp_email varchar2(50),
+emp_address varchar2(50),
+emp_job varchar2(50),
+emp_manager_name varchar2(50),
+emp_hired date,
+emp_ctc number(10),
+emp_city_name varchar2(50),
+emp_state_name varchar2(50),
+emp_county_name varchar2(50),
+crt_by varchar2(50),
+crt_date date);
+
+create table product_dim
+(prod_sur_id number(10) primary key,
+prod_id number(5),
+prod_name varchar2(50),
+prod_family varchar2(50),
+prod_wholesale_price number(10),
+prod_retail_price number(10),
+prod_launched_date date,
+prod_expire_date date,
+prod_man_name varchar2(50),
+prod_man_phone number(10),
+prod_man_email varchar2(50),
+prod_man_city varchar2(50),
+prod_man_state varchar2(50),
+prod_man_country varchar2(50),
+crt_by varchar2(50),
+crt_date date);
+
+create table calender_dim
+(cal_dim_id number(10) primary key,
+cal_date date,
+cal_day varchar2(20),
+cal_week number(10),
+cal_month_name varchar2(20),
+cal_month_number number(10),
+cal_year number(5),
+cal_qtr number(5),
+crt_by varchar2(50),
+crt_date date);
+
+select * from calender_dim;
+select * from product_dim;
+select * from emp_dim;
+select * from payment_method_dim;
+select * from shop_dim;
+select * from customer_dim;
+----------------------------------------------------------fact tables--------------------------------------------------------------------------
+create table sales_fact
+(sales_fact_id number(10) primary key,
+source_transaction_id number(10) references sales_transaction(transaction_id),
+cust_sur_id number(10) references customer_dim(cust_sur_id),
+shop_sur_id number(10) references shop_dim(shop_sur_id),
+prod_sur_id number(10) references product_dim(prod_sur_id),
+emp_sur_id number(10) references emp_dim(emp_sur_id),
+qty number(10),
+whole_sale_price number(10),
+retail_price number(10),
+sales_amount number(10));
+
+create table payment_fact
+(payment_fact_id number(10) primary key,
+source_pay_id number(10)references y_payments(payment_id),
+cust_sur_id number(10) references customer_dim(cust_sur_id),
+shop_sur_id number(10) references shop_dim(shop_sur_id),
+emp_sur_id number(10) references emp_dim(emp_sur_id),
+payment_date_id number(10),
+payment_method_id number(10) references y_ref_payment_methods(payment_method_code),
+payed_amount number(10));
+
+select * from sales_fact;
+select * from payment_fact;
+-------------------------------------customer dimension-------------------------------------------------------------------------------------------------------------
+select customer_name,city_name,country_name,state_name 
+from y_country c,y_state s,y_city ci,y_customers cu
+where c.country_id=s.country_id
+and s.state_id=ci.state_id
+and ci.city_id=cu.city_id;
+
+/
+create or replace procedure sp_cust_dim as
+    cursor cur_cust_dim is (select customer_id,customer_name,customer_phone,customer_email,customer_address,city_name,state_name,country_name
+                            from y_country c,y_state s,y_city ci,y_customers cu
+                            where c.country_id=s.country_id
+                            and s.state_id=ci.state_id
+                            and ci.city_id=cu.city_id);
+    var_count number(5);
+begin
+    for i in cur_cust_dim loop
+        select count(*) into var_count
+        from customer_dim
+        where cust_id=i.customer_id;
+            if var_count=0 then 
+                insert into customer_dim values(cust_sur.nextval,i.customer_id,i.customer_name,
+                                                i.customer_phone,i.customer_email,i.customer_address,
+                                                i.city_name,i.state_name,i.country_name,user,sysdate);
+            end if;
+    end loop;
+    commit;
+end;
+/
+set serveroutput on;
+exec sp_cust_dim;
+create sequence cust_sur; 
+select * from customer_dim;
+-------------------------employee dimension---------------------------------------
+select emp_id,emp_name,emp_phone,emp_email,emp_address,emp_job,emp_manager_name,emp_hired,emp_ctc,city_name,country_name,state_name 
+from y_country c,y_state s,y_city ci,y_employee e,y_manager m
+where c.country_id=s.country_id
+and s.state_id=ci.state_id
+and ci.city_id=e.city_id
+and e.emp_mgr=m.emp_mgr;
+select * from y_employee;
+
+
+/
+create or replace procedure sp_emp_dim as
+    cursor cur_emp_dim is (select emp_id,emp_name,emp_phone,emp_email,emp_address,emp_job,emp_manager_name,emp_hired,emp_ctc,city_name,country_name,state_name 
+                            from y_country c,y_state s,y_city ci,y_employee e,y_manager m
+                            where c.country_id=s.country_id
+                            and s.state_id=ci.state_id
+                            and ci.city_id=e.city_id
+                            and e.emp_mgr=m.emp_mgr);
+    var_count number(5);
+begin
+    for i in cur_emp_dim loop
+        select count(*) into var_count
+        from emp_dim
+        where emp_id=i.emp_id;
+            if var_count=0 then 
+                insert into emp_dim values(emp_sur.nextval,i.emp_id,i.emp_name,
+                                                i.emp_phone,i.emp_email,i.emp_address,i.emp_job,i.emp_manager_name,i.emp_hired,i.emp_ctc,
+                                                i.city_name,i.state_name,i.country_name,user,sysdate);
+            end if;
+    end loop;
+    commit;
+end;
+/
+exec sp_emp_dim;
+create sequence emp_sur; 
+select * from emp_dim;
+select * from y_employee;
+-----------------------------shop dimension---------------------------------------
+select shop_id,shop_name,address,shop_owner_name,open_date,zip_code,city_name,country_name,state_name
+from y_country c,y_state s,y_city ci,y_shop ys
+where c.country_id=s.country_id
+and s.state_id=ci.state_id
+and ci.city_id=ys.city_id;
+/
+create or replace procedure sp_shop_dim as
+    cursor cur_shop_dim is (select shop_id,shop_name,address,shop_owner_name,open_date,zip_code,city_name,country_name,state_name
+                            from y_country c,y_state s,y_city ci,y_shop ys
+                            where c.country_id=s.country_id
+                            and s.state_id=ci.state_id
+                            and ci.city_id=ys.city_id);
+    var_count number(5);
+begin
+    for i in cur_shop_dim loop
+        select count(*) into var_count
+        from shop_dim
+        where shop_id=i.shop_id;
+            if var_count=0 then
+                insert into shop_dim values(shop_sur.nextval,i.shop_id,i.shop_name,i.address,i.shop_owner_name,i.open_date,i.zip_code,
+                                            i.city_name,i.state_name,i.country_name,user,sysdate);
+            end if;
+    end loop;
+    commit;
+end;
+/
+exec sp_shop_dim;
+select * from y_shop;
+select * from shop_dim;
+create sequence shop_sur;
+set serveroutput on;
+---------------------------------Calendar dimension-----------------------------------------------------
+select trunc(sysdate,'yyyy')+ level-1 as dt 
+from dual connect by level<=365;
+/
+create or replace procedure sp_cal_dim as
+    cursor cur_cal_dim is(select trunc(sysdate,'yyyy')+ level-1 as dt 
+                                        from dual connect by level<=365);
+begin
+    for i in cur_cal_dim loop
+        insert into calender_dim values(seq_cal.nextval,i.dt,to_char(i.dt,'d'),to_char(i.dt,'ww'),
+                                        to_char(i.dt,'month'),to_char(i.dt,'mm'),to_char(i.dt,'yyyy'),
+                                        to_char(i.dt,'q'),user,sysdate);
+    end loop;
+    commit;
+end;
+/
+exec sp_cal_dim;
+set serveroutput on;
+create sequence seq_cal;
+select * from calender_dim;
+----------------------------------Payment_method_dim------------------------------------------------------
+select payment_method_name,payment_method_description,payment_method_code
+from y_ref_payment_methods;
+/
+create or replace procedure sp_pay_method_dim as
+    cursor cur_pay_mtd_dim is(select payment_method_name,payment_method_description,payment_method_code
+                                from y_ref_payment_methods);
+    var_count number(5);
+begin
+    for i in cur_pay_mtd_dim loop
+        select count(*) into var_count
+        from payment_method_dim
+        where payment_method_code=i.payment_method_code;
+            if var_count=0 then
+                insert into payment_method_dim values(seq_pay_mtd.nextval,i.payment_method_name,i.payment_method_description,
+                                                        user,sysdate,i.payment_method_code);
+            end if;
+    end loop;
+    commit;
+end;
+/
+exec sp_pay_method_dim;
+select * from payment_method_dim;
+select * from y_ref_payment_methods;
+create sequence seq_pay_mtd;
+set serveroutput on;
+-----------------------------------product_dimension---------------------------------------------------------------
+select product_id,product_name,product_family,product_wholesale_price,product_retail_price,prod_launched_date,prod_expire_date,
+prod_man_name,prod_man_phone,prod_man_email,city_name,country_name,state_name
+from y_country c,y_state s,y_city ci,y_products p,y_prod_manifacturer pm
+where c.country_id=s.country_id
+and s.state_id=ci.state_id
+and ci.city_id=p.city_id
+and p.city_id=pm.city_id;
+
+select * from y_products;
+select * from  y_prod_manifacturer;
+
+/
+create or replace procedure sp_prod_dim as
+    cursor cur_prod_dim is(select product_id,product_name,product_family,product_wholesale_price,product_retail_price,
+                            prod_launched_date,prod_expire_date,prod_man_name,prod_man_phone,prod_man_email,
+                            city_name,country_name,state_name
+                            from y_country c,y_state s,y_city ci,y_products p,y_prod_manifacturer pm
+                            where c.country_id=s.country_id
+                            and s.state_id=ci.state_id
+                            and ci.city_id=p.city_id
+                            and p.city_id=pm.city_id);
+    var_count number(5);
+begin
+    for i in cur_prod_dim loop
+        select count(*) into var_count
+        from product_dim
+        where prod_id=i.product_id 
+        and prod_name=i.product_name 
+        and prod_family=i.product_family
+        and prod_man_name=i.prod_man_name;
+            if var_count = 0 then
+                insert into product_dim values(seq_prod_dim.nextval,i.product_id,i.product_name,i.product_family,
+                                                i.product_wholesale_price,i.product_retail_price,i.prod_launched_date,
+                                                i.prod_expire_date,i.prod_man_name,i.prod_man_phone,i.prod_man_email,
+                                                i.city_name,i.state_name,i.country_name,user,sysdate);
+                update product_dim
+                set prod_wholesale_price=i.product_wholesale_price,
+                prod_retail_price=i.product_retail_price
+                where prod_name=i.product_name 
+                and prod_family=i.product_family
+                and prod_wholesale_price!=i.product_wholesale_price
+                and prod_retail_price!=i.product_retail_price;
+            end if;
+    end loop;
+    commit;
+end;
+/
+exec sp_prod_dim;
+create sequence seq_prod_dim;
+set serveroutput on;
+select * from product_dim;
+
+----------------------------------------------sales fact-----------------------------------------------------------------
+CREATE OR REPLACE PROCEDURE SP_SALES_TXN_FACT AS
+CURSOR C_SALES_TXN_FACT IS
+SELECT P3.TRANSACTION_ID,CUST_SUR_ID,S1.SHOP_SUR_ID,P1.PROD_SUR_ID,E1.EMP_SUR_ID,QUANTITY,PROD_WHOLESALE_PRICE,PROD_RETAIL_PRICE
+FROM CUSTOMER_DIM_PR C1, PRODUCT_DIM_PR P1, EMP_DIM_PR E1 , SHOP_DIM_PR S1, PAYMENT_METHODDIM_PR P2, 
+            CALENDER_DIM_PR C2, SALES_TXN_PRT S2, PRODUCT_IN_TXN_PRT P3 
+WHERE S2.TRANSACTION_ID = P3.TRANSACTION_ID AND
+            S2.PRODUCT_ID=P1.PROD_ID AND
+            S2.SHOP_ID=S1.SHOP_ID AND
+            S2.EMP_ID=E1.EMP_ID AND
+            S2.PRODUCT_ID = P1.PROD_ID AND
+            S2.TRANSACTION_DATE = C2.CAL_DATE ;           
+V_SALES_COUNT NUMBER(5);
+BEGIN
+FOR I IN C_SALES_TXN_FACT LOOP
+        SELECT COUNT(*) INTO V_SALES_COUNT
+        FROM SALES_FACT_PR 
+        WHERE  SOURCE_TRANSACTION_ID = I.TRANSACTION_ID AND CUST_SUR_ID=I.CUST_SUR_ID AND SHOP_SUR_ID=I.SHOP_SUR_ID AND 
+                    PROD_SUR_ID=I.PROD_SUR_ID AND EMP_SUR_ID=I.EMP_SUR_ID AND QTY=I.QUANTITY AND WHOLE_SALE_PRICE=I.PROD_WHOLESALE_PRICE
+                    AND RETAIL_PRICE=I.PROD_RETAIL_PRICE ;
+        IF V_SALES_COUNT = 0 THEN
+        INSERT INTO SALES_FACT_PR VALUES(SEQ_FACT_ID.NEXTVAL, I.TRANSACTION_ID, I.CUST_SUR_ID, I.SHOP_SUR_ID, I.PROD_SUR_ID, I.EMP_SUR_ID, I.QUANTITY,
+                                                                            I.PROD_WHOLESALE_PRICE, I.PROD_RETAIL_PRICE, I.PROD_RETAIL_PRICE*I.QUANTITY);
+      
+        END IF;
+END LOOP;
+END;
+    
+    
+EXEC    SP_SALES_TXN_FACT;
